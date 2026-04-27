@@ -343,10 +343,7 @@ export default function Home() {
         .fw-inline {
           display: flex;
           gap: 8px;
-          width: 100vw;
-          margin-left: calc(-50vw + 50%);
-          padding: 0 32px 0 50vw;
-          box-sizing: border-box;
+          width: 100%;
           margin-top: 8px;
         }
         .fw-inline-card {
