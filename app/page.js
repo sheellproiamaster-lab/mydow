@@ -179,60 +179,92 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ── DIREITA: imagem + nome + frase + botão ── */}
+          {/* ── DIREITA: imagem + nome + frase + botão + framework ── */}
           <div className="right-panel">
             {/* imagem */}
             <div className="agent-wrap float-agent">
               <Image src="/images/mydow.png" alt="Mydow" fill style={{ objectFit: 'contain' }} priority />
             </div>
 
-            {/* nome */}
-            <h1 style={{
-              fontSize: 'clamp(48px, 5.5vw, 80px)',
-              fontWeight: 900,
-              letterSpacing: '-0.04em',
-              lineHeight: 1,
-              background: 'linear-gradient(135deg, #E87A2F 0%, #D4AF37 50%, #C96520 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              margin: 0,
-            }}>
-              Mydow
-            </h1>
+            {/* nome + frase + botão agrupados, subidos */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+              <h1 style={{
+                fontSize: 'clamp(42px, 4.8vw, 70px)',
+                fontWeight: 900,
+                letterSpacing: '-0.04em',
+                lineHeight: 1,
+                background: 'linear-gradient(135deg, #E87A2F 0%, #D4AF37 50%, #C96520 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                margin: 0,
+              }}>
+                Mydow
+              </h1>
 
-            {/* frase */}
-            <p style={{
-              fontSize: 'clamp(15px, 1.5vw, 20px)',
-              fontWeight: 800,
-              color: '#222',
-              margin: 0,
-              textAlign: 'center',
-              maxWidth: '340px',
-              lineHeight: 1.45,
-              letterSpacing: '-0.01em',
-            }}>
-              Seu Agente que executa tarefas de alto nível
-            </p>
+              <p style={{
+                fontSize: 'clamp(13px, 1.3vw, 17px)',
+                fontWeight: 800,
+                color: '#222',
+                margin: 0,
+                textAlign: 'center',
+                maxWidth: '320px',
+                lineHeight: 1.4,
+                letterSpacing: '-0.01em',
+              }}>
+                Seu Agente que executa tarefas de alto nível
+              </p>
 
-            {/* botão */}
-            <button
-              className="btn-orange"
-              onClick={() => setShowModal(true)}
-              style={{
-                padding: '15px 44px',
-                borderRadius: '50px',
-                border: 'none',
-                color: 'white',
-                fontSize: '16px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                letterSpacing: '0.03em',
-                fontFamily: 'inherit',
-              }}
-            >
-              Começar
-            </button>
+              <button
+                className="btn-orange"
+                onClick={() => setShowModal(true)}
+                style={{
+                  padding: '13px 40px',
+                  borderRadius: '50px',
+                  border: 'none',
+                  color: 'white',
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  letterSpacing: '0.03em',
+                  fontFamily: 'inherit',
+                  marginTop: '4px',
+                }}
+              >
+                Começar
+              </button>
+            </div>
+
+            {/* framework — só desktop, horizontal compacto */}
+            <div className="fw-inline">
+              {[
+                { letter: 'M', title: 'Mente Estratégica', desc: 'Planeja e antecipa com precisão.' },
+                { letter: 'Y', title: 'Your Agent',         desc: 'Disponível 24h, na sua voz.' },
+                { letter: 'D', title: 'Decisão Autônoma',   desc: 'Executa sem aprovação constante.' },
+                { letter: 'O', title: 'Orquestração Total', desc: 'Conecta tudo em harmonia.' },
+                { letter: 'W', title: 'Workflow Elevado',   desc: 'Complexo vira extraordinário.' },
+              ].map((item, i) => (
+                <div key={item.letter} className="fw-inline-card"
+                  style={{ animationDelay: `${i * 0.06}s` }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#fff';
+                    e.currentTarget.style.borderColor = 'rgba(232,122,47,0.4)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(232,122,47,0.12)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.7)';
+                    e.currentTarget.style.borderColor = 'rgba(232,122,47,0.13)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <div className="fw-inline-letter">{item.letter}</div>
+                  <div className="fw-inline-title">{item.title}</div>
+                  <p className="fw-inline-desc">{item.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </main>
 
@@ -301,14 +333,53 @@ export default function Home() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 24px;
-          padding: 48px;
+          gap: 14px;
+          padding: 32px 48px;
         }
         .agent-wrap {
-          width: 360px;
-          height: 360px;
+          width: 300px;
+          height: 300px;
           position: relative;
           flex-shrink: 0;
+        }
+        .fw-inline {
+          display: flex;
+          gap: 8px;
+          width: 100%;
+          margin-top: 4px;
+        }
+        .fw-inline-card {
+          flex: 1;
+          background: rgba(255,255,255,0.7);
+          border: 1px solid rgba(232,122,47,0.13);
+          border-radius: 12px;
+          padding: 12px 10px;
+          transition: all 0.22s ease;
+          cursor: default;
+          animation: fadeInUp 0.4s ease both;
+        }
+        .fw-inline-letter {
+          font-size: 26px;
+          font-weight: 900;
+          line-height: 1;
+          margin-bottom: 5px;
+          background: linear-gradient(135deg, #E87A2F, #D4AF37);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .fw-inline-title {
+          font-size: 10px;
+          font-weight: 700;
+          color: #111;
+          margin-bottom: 3px;
+          line-height: 1.2;
+        }
+        .fw-inline-desc {
+          font-size: 9.5px;
+          color: #777;
+          line-height: 1.4;
+          margin: 0;
         }
 
         /* ── ANIMAÇÕES ── */
@@ -345,6 +416,7 @@ export default function Home() {
             gap: 20px;
           }
           .agent-wrap { width: 260px; height: 260px; }
+          .fw-inline { display: none; }
         }
       `}</style>
     </>
