@@ -305,8 +305,8 @@ export default function Home() {
           padding: 48px;
         }
         .agent-wrap {
-          width: 300px;
-          height: 300px;
+          width: 360px;
+          height: 360px;
           position: relative;
           flex-shrink: 0;
         }
@@ -344,7 +344,7 @@ export default function Home() {
             padding: 60px 32px 40px;
             gap: 20px;
           }
-          .agent-wrap { width: 220px; height: 220px; }
+          .agent-wrap { width: 260px; height: 260px; }
         }
       `}</style>
     </>
