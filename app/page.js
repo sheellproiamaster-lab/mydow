@@ -183,7 +183,7 @@ export default function Home() {
           <div className="right-panel">
             {/* imagem */}
             <div className="agent-wrap float-agent">
-              <Image src="/images/mydow-agent.png" alt="Mydow" fill style={{ objectFit: 'contain' }} priority />
+              <Image src="/images/mydow.png" alt="Mydow" fill style={{ objectFit: 'contain' }} priority />
             </div>
 
             {/* nome */}
