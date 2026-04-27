@@ -181,13 +181,13 @@ export default function Home() {
 
           {/* ── DIREITA: imagem + nome + frase + botão + framework ── */}
           <div className="right-panel">
-            {/* imagem */}
-            <div className="agent-wrap float-agent">
-              <Image src="/images/mydow.png" alt="Mydow" fill style={{ objectFit: 'contain' }} priority />
-            </div>
 
-            {/* nome + frase + botão agrupados, subidos */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+            {/* imagem + nome + frase + botão sem gap entre eles */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+              <div className="agent-wrap float-agent">
+                <Image src="/images/mydow.png" alt="Mydow" fill style={{ objectFit: 'contain' }} priority />
+              </div>
+
               <h1 style={{
                 fontSize: 'clamp(42px, 4.8vw, 70px)',
                 fontWeight: 900,
@@ -197,7 +197,7 @@ export default function Home() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
-                margin: 0,
+                margin: '0 0 8px',
               }}>
                 Mydow
               </h1>
@@ -206,7 +206,7 @@ export default function Home() {
                 fontSize: 'clamp(13px, 1.3vw, 17px)',
                 fontWeight: 800,
                 color: '#222',
-                margin: 0,
+                margin: '0 0 14px',
                 textAlign: 'center',
                 maxWidth: '320px',
                 lineHeight: 1.4,
@@ -228,14 +228,13 @@ export default function Home() {
                   cursor: 'pointer',
                   letterSpacing: '0.03em',
                   fontFamily: 'inherit',
-                  marginTop: '4px',
                 }}
               >
                 Começar
               </button>
             </div>
 
-            {/* framework — só desktop, horizontal compacto */}
+            {/* framework — espaçamento curto, alinhado à esquerda do painel */}
             <div className="fw-inline">
               {[
                 { letter: 'M', title: 'Mente Estratégica', desc: 'Planeja e antecipa com precisão.' },
@@ -333,8 +332,8 @@ export default function Home() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 14px;
-          padding: 32px 48px;
+          gap: 20px;
+          padding: 32px 32px 32px 16px;
         }
         .agent-wrap {
           width: 300px;
@@ -346,7 +345,8 @@ export default function Home() {
           display: flex;
           gap: 8px;
           width: 100%;
-          margin-top: 4px;
+          margin-top: 0;
+          align-self: flex-start;
         }
         .fw-inline-card {
           flex: 1;
