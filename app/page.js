@@ -63,14 +63,21 @@ function LoginModal({ onClose }) {
   return (
     <>
       <div onClick={onClose} style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
-        zIndex: 200, backdropFilter: 'blur(4px)',
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
+        zIndex: 200, backdropFilter: 'blur(6px)',
       }} />
       <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, height: '60vh',
-        background: '#fdf0e0', borderRadius: '24px 24px 0 0', zIndex: 201,
+        position: 'fixed',
+        top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 'min(400px, 92vw)',
+        maxHeight: '85vh',
+        background: '#fdf0e0',
+        borderRadius: '24px',
+        zIndex: 201,
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        boxShadow: '0 -8px 40px rgba(0,0,0,0.25)', animation: 'slideUp 0.35s ease',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.25)',
+        animation: 'scaleIn 0.3s ease',
       }}>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0' }}>
           <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'rgba(0,0,0,0.12)' }} />
@@ -176,7 +183,7 @@ export default function Home() {
           <div className="right-panel">
             {/* imagem */}
             <div className="agent-wrap float-agent">
-              <Image src="/images/mydow-agent.jpeg" alt="Mydow" fill style={{ objectFit: 'contain' }} priority />
+              <Image src="/images/mydow-agent.png" alt="Mydow" fill style={{ objectFit: 'contain' }} priority />
             </div>
 
             {/* nome */}
@@ -196,13 +203,14 @@ export default function Home() {
 
             {/* frase */}
             <p style={{
-              fontSize: 'clamp(14px, 1.4vw, 18px)',
-              fontWeight: 600,
-              color: '#555',
+              fontSize: 'clamp(15px, 1.5vw, 20px)',
+              fontWeight: 800,
+              color: '#222',
               margin: 0,
               textAlign: 'center',
-              maxWidth: '320px',
-              lineHeight: 1.5,
+              maxWidth: '340px',
+              lineHeight: 1.45,
+              letterSpacing: '-0.01em',
             }}>
               Seu Agente que executa tarefas de alto nível
             </p>
@@ -238,7 +246,10 @@ export default function Home() {
           alignItems: 'center',
           gap: '6px',
         }}>
-          <div style={{ fontSize: '11px', color: '#555', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600 }}>
+          <div style={{ fontSize: '11px', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600,
+            background: 'linear-gradient(135deg, #E87A2F, #D4AF37)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+          }}>
             Desenvolvido por Michel Macedo Holding
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -247,7 +258,11 @@ export default function Home() {
               background: 'linear-gradient(135deg, #E87A2F, #D4AF37)',
               WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
             }}>Mydow</span>
-            <span style={{ color: '#444', fontSize: '13px' }}>2026 ©</span>
+            <span style={{
+              fontSize: '13px', fontWeight: 700,
+              background: 'linear-gradient(135deg, #E87A2F, #D4AF37)',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+            }}>2026 ©</span>
           </div>
         </footer>
       </div>
@@ -290,8 +305,8 @@ export default function Home() {
           padding: 48px;
         }
         .agent-wrap {
-          width: 260px;
-          height: 260px;
+          width: 300px;
+          height: 300px;
           position: relative;
           flex-shrink: 0;
         }
@@ -299,6 +314,7 @@ export default function Home() {
         /* ── ANIMAÇÕES ── */
         @keyframes progressBar { from { width: 0%; } to { width: 100%; } }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes scaleIn { from { opacity:0; transform: translate(-50%,-50%) scale(0.92); } to { opacity:1; transform: translate(-50%,-50%) scale(1); } }
         .btn-orange {
           background: linear-gradient(135deg, #E87A2F 0%, #C96520 60%, #FFB347 100%);
           transition: all 0.3s ease;
@@ -328,7 +344,7 @@ export default function Home() {
             padding: 60px 32px 40px;
             gap: 20px;
           }
-          .agent-wrap { width: 180px; height: 180px; }
+          .agent-wrap { width: 220px; height: 220px; }
         }
       `}</style>
     </>
