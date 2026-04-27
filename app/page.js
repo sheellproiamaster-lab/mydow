@@ -182,59 +182,58 @@ export default function Home() {
           {/* ── DIREITA: imagem + nome + frase + botão + framework ── */}
           <div className="right-panel">
 
-            {/* imagem + nome + frase + botão sem gap entre eles */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
-              <div className="agent-wrap float-agent">
-                <Image src="/images/mydow.png" alt="Mydow" fill style={{ objectFit: 'contain' }} priority />
-              </div>
-
-              <h1 style={{
-                fontSize: 'clamp(42px, 4.8vw, 70px)',
-                fontWeight: 900,
-                letterSpacing: '-0.04em',
-                lineHeight: 1,
-                background: 'linear-gradient(135deg, #E87A2F 0%, #D4AF37 50%, #C96520 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                margin: '0 0 8px',
-              }}>
-                Mydow
-              </h1>
-
-              <p style={{
-                fontSize: 'clamp(13px, 1.3vw, 17px)',
-                fontWeight: 800,
-                color: '#222',
-                margin: '0 0 14px',
-                textAlign: 'center',
-                maxWidth: '320px',
-                lineHeight: 1.4,
-                letterSpacing: '-0.01em',
-              }}>
-                Seu Agente que executa tarefas de alto nível
-              </p>
-
-              <button
-                className="btn-orange"
-                onClick={() => setShowModal(true)}
-                style={{
-                  padding: '13px 40px',
-                  borderRadius: '50px',
-                  border: 'none',
-                  color: 'white',
-                  fontSize: '15px',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  letterSpacing: '0.03em',
-                  fontFamily: 'inherit',
-                }}
-              >
-                Começar
-              </button>
+            {/* imagem colada ao nome — margem bottom zero na imagem */}
+            <div className="agent-wrap float-agent">
+              <Image src="/images/mydow.png" alt="Mydow" fill style={{ objectFit: 'contain' }} priority />
             </div>
 
-            {/* framework — espaçamento curto, alinhado à esquerda do painel */}
+            {/* nome imediatamente abaixo, sem margem top */}
+            <h1 style={{
+              fontSize: 'clamp(42px, 4.8vw, 70px)',
+              fontWeight: 900,
+              letterSpacing: '-0.04em',
+              lineHeight: 1,
+              background: 'linear-gradient(135deg, #E87A2F 0%, #D4AF37 50%, #C96520 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              margin: 0,
+            }}>
+              Mydow
+            </h1>
+
+            <p style={{
+              fontSize: 'clamp(13px, 1.3vw, 17px)',
+              fontWeight: 800,
+              color: '#222',
+              margin: 0,
+              textAlign: 'center',
+              maxWidth: '320px',
+              lineHeight: 1.4,
+              letterSpacing: '-0.01em',
+            }}>
+              Seu Agente que executa tarefas de alto nível
+            </p>
+
+            <button
+              className="btn-orange"
+              onClick={() => setShowModal(true)}
+              style={{
+                padding: '13px 40px',
+                borderRadius: '50px',
+                border: 'none',
+                color: 'white',
+                fontSize: '15px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                letterSpacing: '0.03em',
+                fontFamily: 'inherit',
+              }}
+            >
+              Começar
+            </button>
+
+            {/* framework — começa do meio da tela (left: 50vw) */}
             <div className="fw-inline">
               {[
                 { letter: 'M', title: 'Mente Estratégica', desc: 'Planeja e antecipa com precisão.' },
@@ -332,8 +331,8 @@ export default function Home() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 20px;
-          padding: 32px 32px 32px 16px;
+          gap: 10px;
+          padding: 32px 32px 32px 0;
         }
         .agent-wrap {
           width: 300px;
@@ -344,9 +343,11 @@ export default function Home() {
         .fw-inline {
           display: flex;
           gap: 8px;
-          width: 100%;
-          margin-top: 0;
-          align-self: flex-start;
+          width: 100vw;
+          margin-left: calc(-50vw + 50%);
+          padding: 0 32px 0 50vw;
+          box-sizing: border-box;
+          margin-top: 8px;
         }
         .fw-inline-card {
           flex: 1;
