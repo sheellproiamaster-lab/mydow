@@ -19,106 +19,124 @@ const CAPABILITIES = [
 ];
 
 const FRAMEWORK = [
-  {
-    letter: 'M',
-    title: 'Mente Estratégica',
-    desc: 'Planeja, prioriza e antecipa cada movimento com precisão cirúrgica.',
-  },
-  {
-    letter: 'Y',
-    title: 'Your Agent',
-    desc: 'Seu agente pessoal de alto desempenho, disponível 24h, na sua voz.',
-  },
-  {
-    letter: 'D',
-    title: 'Decisão Autônoma',
-    desc: 'Executa com maestria sem precisar de aprovação constante.',
-  },
-  {
-    letter: 'O',
-    title: 'Orquestração Total',
-    desc: 'Conecta ferramentas, APIs e sistemas em perfeita harmonia.',
-  },
-  {
-    letter: 'W',
-    title: 'Workflow Elevado',
-    desc: 'Transforma processos complexos em resultados extraordinários.',
-  },
+  { letter: 'M', title: 'Mente Estratégica', desc: 'Planeja, prioriza e antecipa cada movimento com precisão cirúrgica.' },
+  { letter: 'Y', title: 'Your Agent',         desc: 'Seu agente pessoal de alto desempenho, disponível 24h, na sua voz.' },
+  { letter: 'D', title: 'Decisão Autônoma',   desc: 'Executa com maestria sem precisar de aprovação constante.' },
+  { letter: 'O', title: 'Orquestração Total', desc: 'Conecta ferramentas, APIs e sistemas em perfeita harmonia.' },
+  { letter: 'W', title: 'Workflow Elevado',   desc: 'Transforma processos complexos em resultados extraordinários.' },
+];
+
+const WORDS = [
+  { text: 'Estratégia', color: '#FF9500' },
+  { text: 'Autonomia',  color: '#FFD700' },
+  { text: 'Precisão',   color: '#FF6B35' },
+  { text: 'Execução',   color: '#FFC300' },
+  { text: 'Resultado',  color: '#FFFFFF' },
 ];
 
 export default function Home() {
-  const [currentCap, setCurrentCap] = useState(0);
-  const [visible, setVisible] = useState(true);
+  const [currentCap, setCurrentCap]   = useState(0);
+  const [capVisible, setCapVisible]   = useState(true);
+  const [wordIndex, setWordIndex]     = useState(0);
+  const [wordVisible, setWordVisible] = useState(true);
 
+  /* ciclo das capacidades */
   useEffect(() => {
     const interval = setInterval(() => {
-      setVisible(false);
+      setCapVisible(false);
       const t = setTimeout(() => {
-        setCurrentCap((prev) => (prev + 1) % CAPABILITIES.length);
-        setVisible(true);
+        setCurrentCap((p) => (p + 1) % CAPABILITIES.length);
+        setCapVisible(true);
       }, 420);
       return () => clearTimeout(t);
     }, 3500);
     return () => clearInterval(interval);
   }, []);
 
+  /* ciclo das palavras */
+  useEffect(() => {
+    let t1, t2;
+    t1 = setTimeout(() => {
+      setWordVisible(false);
+      t2 = setTimeout(() => {
+        setWordIndex((p) => (p + 1) % WORDS.length);
+        setWordVisible(true);
+      }, 500);
+    }, 2000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [wordIndex]);
+
   return (
     <>
       <main>
 
-        {/* ── TOP SECTION ── fundo preto ───────────────────────── */}
+        {/* ══════════════ SEÇÃO PRETA ══════════════ */}
         <div
           style={{
             background: '#0A0A0A',
             display: 'flex',
-            alignItems: 'flex-start',
-            padding: '48px 48px 40px',
-            gap: '48px',
+            alignItems: 'stretch',   /* quadrado branco = altura do conteúdo direito */
+            padding: '48px',
+            gap: '32px',
           }}
         >
-          {/* ── ESQUERDA: quadrado branco c/ animação ── */}
+
+          {/* ── QUADRADO BRANCO (animação) ── */}
           <div
             style={{
+              width: '44%',
               flexShrink: 0,
-              width: '46%',
               backgroundColor: '#ffffff',
               backgroundImage:
-                'linear-gradient(rgba(0,0,0,0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.055) 1px, transparent 1px)',
+                'linear-gradient(rgba(0,0,0,0.055) 1px, transparent 1px),' +
+                'linear-gradient(90deg, rgba(0,0,0,0.055) 1px, transparent 1px)',
               backgroundSize: '44px 44px',
               borderRadius: '16px',
               padding: '32px 36px 28px',
-              boxShadow: '0 0 60px rgba(232,122,47,0.08)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              textAlign: 'center',
             }}
           >
-            {/* Counter */}
+            {/* contador */}
             <div
               style={{
                 fontSize: '11px',
                 color: '#bbb',
                 letterSpacing: '3px',
                 fontWeight: 700,
-                marginBottom: '16px',
+                marginBottom: '20px',
+                alignSelf: 'flex-start',
               }}
             >
               {String(currentCap + 1).padStart(2, '0')} /{' '}
               {String(CAPABILITIES.length).padStart(2, '0')}
             </div>
 
-            {/* Texto animado grande */}
-            <div style={{ minHeight: '168px', display: 'flex', alignItems: 'flex-start' }}>
+            {/* texto animado — ocupa o espaço restante, centralizado */}
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+              }}
+            >
               <p
                 key={currentCap}
                 style={{
-                  fontSize: 'clamp(32px, 3.8vw, 58px)',
+                  fontSize: 'clamp(34px, 4vw, 60px)',
                   fontWeight: 800,
                   fontStyle: 'italic',
                   lineHeight: 1.1,
                   color: '#111',
                   letterSpacing: '-0.025em',
-                  opacity: visible ? 1 : 0,
-                  transform: visible
-                    ? 'translateY(0) scale(1)'
-                    : 'translateY(24px) scale(0.96)',
+                  textAlign: 'center',
+                  opacity: capVisible ? 1 : 0,
+                  transform: capVisible ? 'translateY(0) scale(1)' : 'translateY(22px) scale(0.96)',
                   transition: 'opacity 0.4s ease, transform 0.4s ease',
                 }}
               >
@@ -126,14 +144,15 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Linha laranja — o quadrado para aqui */}
+            {/* barra laranja — o quadrado para aqui */}
             <div
               style={{
-                marginTop: '20px',
+                width: '100%',
                 height: '3px',
-                background: 'rgba(0,0,0,0.06)',
+                background: 'rgba(0,0,0,0.07)',
                 borderRadius: '2px',
                 overflow: 'hidden',
+                marginTop: '24px',
               }}
             >
               <div
@@ -148,25 +167,20 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ── DIREITA: imagem + card creme + botão ── */}
+          {/* ── CENTRO: imagem + card creme + botão ── */}
           <div
             style={{
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
-              alignItems: 'flex-start',
+              justifyContent: 'center',
               gap: '20px',
             }}
           >
-            {/* Imagem do Mydow — grande, sem círculo, sem anel */}
+            {/* imagem — maior, sem anel */}
             <div
               className="float-agent"
-              style={{
-                width: '180px',
-                height: '180px',
-                position: 'relative',
-                flexShrink: 0,
-              }}
+              style={{ width: '220px', height: '220px', position: 'relative', flexShrink: 0 }}
             >
               <Image
                 src="/images/mydow-agent.jpeg"
@@ -177,14 +191,14 @@ export default function Home() {
               />
             </div>
 
-            {/* Card creme com descrição */}
+            {/* card creme */}
             <div
               style={{
                 background: '#fdf0e0',
                 borderRadius: '16px',
                 padding: '20px 24px',
-                maxWidth: '420px',
-                border: '1px solid rgba(232,122,47,0.15)',
+                maxWidth: '380px',
+                border: '1px solid rgba(232,122,47,0.18)',
               }}
             >
               <p
@@ -192,7 +206,7 @@ export default function Home() {
                   fontSize: '15px',
                   fontWeight: 700,
                   color: '#111',
-                  lineHeight: 1.65,
+                  lineHeight: 1.7,
                   margin: 0,
                 }}
               >
@@ -203,10 +217,11 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Botão Começar Agora */}
+            {/* botão */}
             <button
               className="btn-orange"
               style={{
+                width: 'fit-content',
                 padding: '14px 36px',
                 borderRadius: '50px',
                 border: 'none',
@@ -238,16 +253,57 @@ export default function Home() {
               </span>
             </button>
           </div>
+
+          {/* ── DIREITA: animação de palavras ── */}
+          <div
+            style={{
+              width: '160px',
+              flexShrink: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-start',
+              paddingTop: '12px',
+              gap: '10px',
+            }}
+          >
+            {WORDS.map((word, i) => (
+              <div
+                key={word.text}
+                style={{
+                  height: '52px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  opacity: wordIndex === i && wordVisible ? 1 : 0,
+                  transform:
+                    wordIndex === i && wordVisible
+                      ? 'translateX(0)'
+                      : 'translateX(16px)',
+                  transition: 'opacity 0.45s ease, transform 0.45s ease',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '22px',
+                    fontWeight: 800,
+                    color: word.color,
+                    letterSpacing: '-0.01em',
+                    textShadow: `0 0 24px ${word.color}55`,
+                  }}
+                >
+                  {word.text}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* ── FRAMEWORK ── 5 cards lado a lado ───────────────────── */}
+        {/* ══════════════ FRAMEWORK ══════════════ */}
         <div
           style={{
             background: '#fdf0e0',
-            padding: '28px 40px 20px',
+            padding: '24px 40px 18px',
             display: 'flex',
             gap: '12px',
-            borderTop: '1px solid rgba(232,122,47,0.1)',
           }}
         >
           {FRAMEWORK.map((item, i) => (
@@ -290,15 +346,7 @@ export default function Home() {
               >
                 {item.letter}
               </div>
-              <div
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  color: '#111',
-                  marginBottom: '5px',
-                  letterSpacing: '-0.01em',
-                }}
-              >
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#111', marginBottom: '5px' }}>
                 {item.title}
               </div>
               <p style={{ fontSize: '11.5px', color: '#666', lineHeight: 1.55, margin: 0 }}>
@@ -307,63 +355,58 @@ export default function Home() {
             </div>
           ))}
         </div>
+      </main>
 
-        {/* ── SLOGAN ──────────────────────────────────────────────── */}
-        <div
-          style={{
-            background: '#fdf0e0',
-            textAlign: 'center',
-            padding: '14px 40px 24px',
-          }}
-        >
+      {/* ══════════════ RODAPÉ ══════════════ */}
+      <footer
+        style={{
+          background: '#0A0A0A',
+          padding: '28px 24px',
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+
+          {/* slogan — destaque máximo */}
           <p
             style={{
-              fontSize: 'clamp(15px, 1.8vw, 20px)',
-              fontWeight: 700,
-              color: '#333',
+              fontSize: 'clamp(17px, 2vw, 24px)',
+              fontWeight: 900,
+              color: '#ffffff',
+              letterSpacing: '-0.01em',
               margin: 0,
-              letterSpacing: '0.01em',
             }}
           >
             Seu Agente que executa tarefas de alto nível
           </p>
-        </div>
-      </main>
 
-      {/* ── RODAPÉ ──────────────────────────────────────────────── */}
-      <footer
-        style={{
-          background: '#0A0A0A',
-          color: 'white',
-          padding: '22px',
-          textAlign: 'center',
-        }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
           <div
             style={{
-              fontSize: '11px',
-              color: '#555',
-              letterSpacing: '2px',
+              width: '36px',
+              height: '1px',
+              background: 'linear-gradient(90deg, transparent, #E87A2F, transparent)',
+            }}
+          />
+
+          {/* desenvolvido por */}
+          <div
+            style={{
+              fontSize: '12px',
+              color: '#666',
+              letterSpacing: '1.5px',
               textTransform: 'uppercase',
               fontWeight: 600,
             }}
           >
             Desenvolvido por Michel Macedo Holding
           </div>
-          <div
-            style={{
-              width: '32px',
-              height: '1px',
-              background: 'linear-gradient(90deg, transparent, #E87A2F, transparent)',
-            }}
-          />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+
+          {/* Mydow 2026 © */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span
               style={{
                 fontSize: '16px',
                 fontWeight: 900,
-                letterSpacing: '-0.02em',
                 background: 'linear-gradient(135deg, #E87A2F, #D4AF37)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -372,9 +415,7 @@ export default function Home() {
             >
               Mydow
             </span>
-            <span style={{ color: '#444', fontSize: '13px' }}>
-              © {new Date().getFullYear()} — Todos os direitos reservados
-            </span>
+            <span style={{ color: '#555', fontSize: '13px' }}>2026 ©</span>
           </div>
         </div>
       </footer>
@@ -390,7 +431,6 @@ export default function Home() {
         }
         .btn-orange {
           background: linear-gradient(135deg, #E87A2F 0%, #C96520 60%, #FFB347 100%);
-          background-size: 200% 200%;
           transition: all 0.3s ease;
         }
         .btn-orange:hover {
