@@ -224,9 +224,9 @@ function LeftPanel({ currentCap, visible }) {
             lineHeight: 1.6,
           }}
         >
-          "Não se trata de trabalhar mais.
+          &ldquo;Não se trata de trabalhar mais.
           <br />
-          Trata-se de executar com inteligência."
+          Trata-se de executar com inteligência.&rdquo;
         </p>
       </div>
 
@@ -575,7 +575,7 @@ function RightPanel() {
               letterSpacing: '-0.02em',
             }}
           >
-            "Enquanto você pensa,
+            &ldquo;Enquanto você pensa,
             <br />
             <span
               style={{
@@ -587,7 +587,7 @@ function RightPanel() {
             >
               o Mydow já executou.
             </span>
-            "
+            &rdquo;
           </p>
         </div>
 
