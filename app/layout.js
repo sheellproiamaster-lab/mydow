@@ -20,8 +20,8 @@ export const metadata = {
     locale: 'pt_BR',
   },
   icons: {
-    icon: '/images/mydow-agent.jpeg',
-    apple: '/images/mydow-agent.jpeg',
+    icon: '/images/mydow.png',
+    apple: '/images/mydow.png',
   },
 };
 
@@ -46,7 +46,7 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Mydow" />
-        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" href="/images/mydow.png" />
       </head>
       <body>
         {children}

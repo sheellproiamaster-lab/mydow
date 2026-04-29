@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { createClient } from '@/lib/supabase/client';
 
 const CAPABILITIES = [
   'Automatiza fluxos complexos de trabalho',
@@ -57,9 +59,47 @@ function MydowTyping() {
 }
 
 function LoginModal({ onClose }) {
+  const router = useRouter();
   const [tab, setTab] = useState('criar');
   const [form, setForm] = useState({ nome: '', email: '', senha: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  async function handleSignUp() {
+    if (!form.nome || !form.email || !form.senha) { setError('Preencha todos os campos.'); return; }
+    setLoading(true); setError('');
+    const supabase = createClient();
+    const { data, error: authErr } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.senha,
+      options: { data: { name: form.nome } },
+    });
+    if (authErr) { setError(authErr.message); setLoading(false); return; }
+    if (data.user) {
+      await supabase.from('users').upsert({
+        id: data.user.id, email: form.email, name: form.nome,
+        plan: 'free', accepted_terms: false,
+      });
+      await supabase.from('message_counts').upsert({
+        user_id: data.user.id, count: 20, reset_at: null,
+      });
+    }
+    router.push('/chat');
+  }
+
+  async function handleSignIn() {
+    if (!form.email || !form.senha) { setError('Preencha e-mail e senha.'); return; }
+    setLoading(true); setError('');
+    const supabase = createClient();
+    const { error: authErr } = await supabase.auth.signInWithPassword({
+      email: form.email,
+      password: form.senha,
+    });
+    if (authErr) { setError('E-mail ou senha incorretos.'); setLoading(false); return; }
+    router.push('/chat');
+  }
+
   return (
     <>
       <div onClick={onClose} style={{
@@ -83,11 +123,11 @@ function LoginModal({ onClose }) {
           <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'rgba(0,0,0,0.12)' }} />
         </div>
         <p style={{ textAlign: 'center', fontSize: '13px', color: '#777', margin: '12px 24px 0', fontStyle: 'italic' }}>
-          Executando tarefas de alto nível para o seu negócio
+          Acesse o Mydow para executar suas tarefas
         </p>
         <div style={{ display: 'flex', margin: '14px 24px 0', borderRadius: '12px', background: 'rgba(0,0,0,0.06)', padding: '3px' }}>
           {['criar', 'entrar'].map((t) => (
-            <button key={t} onClick={() => setTab(t)} style={{
+            <button key={t} onClick={() => { setTab(t); setError(''); }} style={{
               flex: 1, padding: '9px', border: 'none', borderRadius: '10px',
               fontWeight: 700, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit',
               background: tab === t ? '#E87A2F' : 'transparent',
@@ -96,18 +136,23 @@ function LoginModal({ onClose }) {
           ))}
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '14px 24px 0' }}>
+          {error && <p style={{ color: '#c0392b', fontSize: '13px', marginBottom: '8px', textAlign: 'center' }}>{error}</p>}
           {tab === 'criar' ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <input className="modal-input" placeholder="Nome" value={form.nome} onChange={set('nome')} />
               <input className="modal-input" placeholder="E-mail" type="email" value={form.email} onChange={set('email')} />
               <input className="modal-input" placeholder="Senha" type="password" value={form.senha} onChange={set('senha')} />
-              <button className="btn-orange modal-btn">Criar Conta</button>
+              <button className="btn-orange modal-btn" onClick={handleSignUp} disabled={loading}>
+                {loading ? 'Criando...' : 'Criar Conta'}
+              </button>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <input className="modal-input" placeholder="E-mail" type="email" value={form.email} onChange={set('email')} />
               <input className="modal-input" placeholder="Senha" type="password" value={form.senha} onChange={set('senha')} />
-              <button className="btn-orange modal-btn">Entrar</button>
+              <button className="btn-orange modal-btn" onClick={handleSignIn} disabled={loading}>
+                {loading ? 'Entrando...' : 'Entrar'}
+              </button>
             </div>
           )}
         </div>

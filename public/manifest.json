@@ -2,7 +2,7 @@
   "name": "Mydow — O Agente de Alto Nível",
   "short_name": "Mydow",
   "description": "O agente que executa tarefas de alto nível para o seu negócio.",
-  "start_url": "/",
+  "start_url": "/chat",
   "display": "standalone",
   "background_color": "#fdf0e0",
   "theme_color": "#E87A2F",
@@ -12,10 +12,16 @@
   "categories": ["productivity", "business"],
   "icons": [
     {
-      "src": "/images/mydow-agent.jpeg",
-      "sizes": "any",
-      "type": "image/jpeg",
-      "purpose": "any"
+      "src": "/images/mydow.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/mydow.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [
@@ -23,7 +29,7 @@
       "name": "Começar Agora",
       "short_name": "Começar",
       "description": "Acesse o Mydow diretamente",
-      "url": "/"
+      "url": "/chat"
     }
   ]
 }
