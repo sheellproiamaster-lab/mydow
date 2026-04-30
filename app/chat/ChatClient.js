@@ -362,7 +362,7 @@ function AgentsModal({ onClose, onSelectAgent }) {
             </button>
           ))}
         </div>
-        <p style={{ fontSize: 12, color: 'var(--t-muted)', textAlign: 'center', marginTop: 16, margin: '16px 0 0' }}>Interfaces completas em breve</p>
+        <p style={{ fontSize: 12, color: 'var(--t-muted)', textAlign: 'center', marginTop: 16, margin: '16px 0 0' }}>Clique em um agente para abrir a interface completa</p>
       </div>
     </div>
   )
@@ -992,11 +992,15 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
   // BUG 4 FIX: anyModalOpen prevents menu outside-click from firing
   const anyModalOpen = lgpdOpen || plansOpen || knowMydowOpen || memoriaOpen || settingsOpen || agentsOpen || tipsOpen || usageOpen
 
-  // ── LGPD ───────────────────────────────────────────────────────
+  // ── LGPD (via admin API to bypass RLS) ────────────────────────
   const handleLGPDAccept = useCallback(async () => {
-    const { error } = await supabase.from('users').update({ accepted_terms: true, accepted_at: new Date().toISOString() }).eq('id', user.id)
-    if (!error) setLgpdOpen(false)
-  }, [supabase, user.id])
+    const res = await fetch('/api/user/accept-terms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id }),
+    })
+    if (res.ok) setLgpdOpen(false)
+  }, [user.id])
 
   // ── Navigation ─────────────────────────────────────────────────
   const handleNewConversation = useCallback(() => {
@@ -1204,9 +1208,8 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
 
   // ── Agents ────────────────────────────────────────────────────
   const handleSelectAgent = useCallback((agent) => {
-    handleNewConversation()
-    setTimeout(() => handleSend(`Olá! Quero usar o agente ${agent.name} — ${agent.desc}`), 50)
-  }, [handleNewConversation, handleSend])
+    router.push(`/agents/${agent.id}`)
+  }, [router])
 
   // ── Side menu toggle ───────────────────────────────────────────
   const handleToggleMenu = useCallback(() => setSideMenuOpen(prev => !prev), [])

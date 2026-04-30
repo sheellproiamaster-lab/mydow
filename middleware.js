@@ -25,12 +25,14 @@ export async function middleware(request) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const { pathname } = request.nextUrl
 
-  if (request.nextUrl.pathname.startsWith('/chat') && !user) {
+  const protectedPaths = pathname.startsWith('/chat') || pathname.startsWith('/agents')
+  if (protectedPaths && !user) {
     return NextResponse.redirect(new URL('/', request.url))
   }
 
   return response
 }
 
-export const config = { matcher: ['/chat/:path*'] }
+export const config = { matcher: ['/chat/:path*', '/agents/:path*'] }
