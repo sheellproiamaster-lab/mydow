@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
@@ -19,7 +20,33 @@ export async function GET(request) {
         },
       }
     )
-    await supabase.auth.exchangeCodeForSession(code)
+
+    const { data: { session } } = await supabase.auth.exchangeCodeForSession(code)
+
+    // Create user record for OAuth users (Google etc.) if not exists
+    if (session?.user) {
+      const { user } = session
+      const admin = getSupabaseAdmin()
+
+      const { data: existing } = await admin.from('users').select('id').eq('id', user.id).single()
+
+      if (!existing) {
+        await admin.from('users').insert({
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário',
+          avatar_url: user.user_metadata?.avatar_url || null,
+          plan: 'free',
+          accepted_terms: false,
+        }).catch(() => {})
+
+        await admin.from('message_counts').insert({
+          user_id: user.id,
+          count: 20,
+          reset_at: null,
+        }).catch(() => {})
+      }
+    }
   }
 
   return NextResponse.redirect(`${origin}/chat`)
