@@ -1103,8 +1103,18 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
         setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: full } : m))
       }
 
-      // Finalize message (remove streaming flag)
-      setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: full, streaming: false } : m))
+      // Finalize message — detect [DOC] tag for downloadable document
+      if (full.trimStart().startsWith('[DOC]')) {
+        const docContent = full.replace(/^\[DOC\]\s*/m, '').trim()
+        setMessages(prev => prev.map(m => m.id === assistantId ? {
+          ...m,
+          content: '📄 Documento gerado! Clique abaixo para baixar.',
+          docContent,
+          streaming: false,
+        } : m))
+      } else {
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: full, streaming: false } : m))
+      }
 
       // Update local message count (count = used, increments)
       setMsgCount(prev => {
@@ -1121,7 +1131,7 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
     }
 
     setIsStreaming(false)
-  }, [isStreaming, supabase, user, userMemory, settings.language])
+  }, [isStreaming, user, userMemory, settings.language])
 
   // ── File upload / document analysis ───────────────────────────
   const handleFileSelect = useCallback(async (file) => {
@@ -1183,7 +1193,7 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
       setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao analisar arquivo.', streaming: false } : m))
     }
     setIsStreaming(false)
-  }, [isStreaming, supabase, user, settings.language])
+  }, [isStreaming, user, settings.language])
 
   // ── Conversation management ────────────────────────────────────
   const handleDeleteConversation = useCallback(async (convId) => {

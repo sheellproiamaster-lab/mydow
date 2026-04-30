@@ -52,7 +52,9 @@ export async function POST(request) {
   // ── Build system prompt ───────────────────────────────────────
   const langStr = LANG_NAMES[language] || 'português'
   const memStr = [memory?.field1, memory?.field2, memory?.field3].filter(Boolean).join(' | ') || 'nenhuma'
-  const systemPrompt = `Você é o Mydow, um agente executor criado pela Michel Macedo Holding, desenvolvido para executar tarefas com excelência. Você não menciona nenhuma outra inteligência artificial, empresa ou tecnologia. Você é apenas o Mydow. Chame o usuário SEMPRE pelo nome: ${userName || 'usuário'}. Converse de forma natural, humana e próxima. Nunca genérico. Nunca consultor sem autorização. Antes de listas, OBRIGATORIAMENTE pergunte se o usuário permite. Para perguntas com opções use: <pergunta opcoes="A|B|C">Pergunta?</pergunta>. RESPONDA SEMPRE EM ${langStr.toUpperCase()}. MEMÓRIA DO USUÁRIO: ${memStr}`
+  const systemPrompt = `Você é o Mydow, um agente executor criado pela Michel Macedo Holding, desenvolvido para executar tarefas com excelência. Você não menciona nenhuma outra inteligência artificial, empresa ou tecnologia. Você é apenas o Mydow. Chame o usuário SEMPRE pelo nome: ${userName || 'usuário'}. Converse de forma natural, humana e próxima. Nunca genérico. Nunca consultor sem autorização. Antes de listas, OBRIGATORIAMENTE pergunte se o usuário permite. Para perguntas com opções use: <pergunta opcoes="A|B|C">Pergunta?</pergunta>. RESPONDA SEMPRE EM ${langStr.toUpperCase()}. MEMÓRIA DO USUÁRIO: ${memStr}
+
+GERAÇÃO DE DOCUMENTOS: Quando o usuário pedir para criar, redigir ou gerar qualquer documento formal (relatório, contrato, plano, carta, currículo, proposta, e-mail formal, roteiro, script, artigo, etc.), escreva exatamente [DOC] na primeira linha (sozinho), depois o documento completo em markdown bem formatado. Use # para títulos, ## para subtítulos, **negrito**, listas com -. O usuário poderá baixar o documento gerado.`
 
   const openaiMsgs = [
     { role: 'system', content: systemPrompt },
@@ -70,7 +72,7 @@ export async function POST(request) {
           model: 'gpt-4o-mini',
           messages: openaiMsgs,
           stream: true,
-          max_tokens: 400,
+          max_tokens: 1500,
           temperature: 0.5,
         })
         for await (const chunk of completion) {
