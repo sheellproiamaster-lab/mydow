@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 export const dynamic = 'force-dynamic'
 
 const PLAN_LIMITS = { free: 20, plus: 60, pro: Infinity }
-const NO_DECREMENT_AGENTS = ['tradutor', 'games']
+const NO_DECREMENT_AGENTS = ['tradutor', 'games', 'organizador']
 const LANG_NAMES = { pt: 'português', en: 'inglês', es: 'espanhol' }
 
 export async function POST(request) {
@@ -16,22 +16,26 @@ export async function POST(request) {
 
   if (!userId) return new Response('Unauthorized', { status: 401 })
 
+  const limit = PLAN_LIMITS[userPlan] || 20
   const skipLimit = userPlan === 'pro' || NO_DECREMENT_AGENTS.includes(agentType)
 
-  // ── Check & reset message count ────────────────────────────────
+  // ── Check message count (count = messages USED, starts at 0) ──
   if (!skipLimit) {
-    const { data: mc } = await supabase.from('message_counts').select('count, reset_at').eq('user_id', userId).single()
+    let { data: mc } = await supabase.from('message_counts').select('count, reset_at').eq('user_id', userId).single()
 
     if (mc) {
+      // Reset if window expired
       if (mc.reset_at && new Date() > new Date(mc.reset_at)) {
-        const limit = PLAN_LIMITS[userPlan] || 20
-        await supabase.from('message_counts').update({ count: limit, reset_at: null }).eq('user_id', userId)
-      } else if (mc.count <= 0) {
+        await supabase.from('message_counts').update({ count: 0, reset_at: null }).eq('user_id', userId)
+        mc = { count: 0, reset_at: null }
+      }
+      // Block if limit reached
+      if (mc.count >= limit) {
         return Response.json({ error: 'limit_reached', reset_at: mc.reset_at }, { status: 429 })
       }
     } else {
-      const limit = PLAN_LIMITS[userPlan] || 20
-      await supabase.from('message_counts').insert({ user_id: userId, count: limit, reset_at: null })
+      // Auto-create if missing (first message)
+      await supabase.from('message_counts').insert({ user_id: userId, count: 0, reset_at: null })
     }
   }
 
@@ -45,15 +49,14 @@ export async function POST(request) {
     }).catch(() => {})
   }
 
-  // ── Build system prompt ────────────────────────────────────────
+  // ── Build system prompt ───────────────────────────────────────
   const langStr = LANG_NAMES[language] || 'português'
   const memStr = [memory?.field1, memory?.field2, memory?.field3].filter(Boolean).join(' | ') || 'nenhuma'
-
   const systemPrompt = `Você é o Mydow, um agente executor criado pela Michel Macedo Holding, desenvolvido para executar tarefas com excelência. Você não menciona nenhuma outra inteligência artificial, empresa ou tecnologia. Você é apenas o Mydow. Chame o usuário SEMPRE pelo nome: ${userName || 'usuário'}. Converse de forma natural, humana e próxima. Nunca genérico. Nunca consultor sem autorização. Antes de listas, OBRIGATORIAMENTE pergunte se o usuário permite. Para perguntas com opções use: <pergunta opcoes="A|B|C">Pergunta?</pergunta>. RESPONDA SEMPRE EM ${langStr.toUpperCase()}. MEMÓRIA DO USUÁRIO: ${memStr}`
 
   const openaiMsgs = [
     { role: 'system', content: systemPrompt },
-    ...messages.map((m) => ({ role: m.role, content: m.content })),
+    ...messages.map(m => ({ role: m.role, content: m.content })),
   ]
 
   // ── Stream ────────────────────────────────────────────────────
@@ -70,21 +73,16 @@ export async function POST(request) {
           max_tokens: 400,
           temperature: 0.5,
         })
-
         for await (const chunk of completion) {
           const text = chunk.choices[0]?.delta?.content || ''
-          if (text) {
-            fullResponse += text
-            controller.enqueue(encoder.encode(text))
-          }
+          if (text) { fullResponse += text; controller.enqueue(encoder.encode(text)) }
         }
       } catch (err) {
         controller.enqueue(encoder.encode('Erro ao processar resposta. Tente novamente.'))
       }
-
       controller.close()
 
-      // ── Post-stream writes (fire and forget) ──────────────────
+      // ── Post-stream: save assistant message + increment count ─
       if (conversationId && fullResponse) {
         await Promise.all([
           supabase.from('messages').insert({ conversation_id: conversationId, role: 'assistant', content: fullResponse }),
@@ -95,8 +93,9 @@ export async function POST(request) {
       if (!skipLimit) {
         const { data: mc } = await supabase.from('message_counts').select('count, reset_at').eq('user_id', userId).single().catch(() => ({ data: null }))
         if (mc) {
-          const newCount = Math.max(0, mc.count - 1)
-          const resetAt = newCount === 0 && !mc.reset_at ? new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString() : mc.reset_at
+          const newCount = Math.min(limit, mc.count + 1)
+          // Set reset_at when limit first reached
+          const resetAt = newCount >= limit && !mc.reset_at ? new Date(Date.now() + 7 * 3600 * 1000).toISOString() : mc.reset_at
           await supabase.from('message_counts').update({ count: newCount, reset_at: resetAt }).eq('user_id', userId).catch(() => {})
         }
       }

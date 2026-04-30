@@ -23,17 +23,21 @@ export async function POST(request) {
   const { messages, userId, userName, memory, userPlan = 'free', agentSlug, language = 'pt' } = await request.json()
   if (!userId) return new Response('Unauthorized', { status: 401 })
 
+  const limit = PLAN_LIMITS[userPlan] || 20
   const skipLimit = userPlan === 'pro' || NO_LIMIT_AGENTS.includes(agentSlug)
 
   if (!skipLimit) {
-    const { data: mc } = await supabase.from('message_counts').select('count, reset_at').eq('user_id', userId).single()
+    let { data: mc } = await supabase.from('message_counts').select('count, reset_at').eq('user_id', userId).single()
     if (mc) {
       if (mc.reset_at && new Date() > new Date(mc.reset_at)) {
-        const limit = PLAN_LIMITS[userPlan] || 20
-        await supabase.from('message_counts').update({ count: limit, reset_at: null }).eq('user_id', userId)
-      } else if (mc.count <= 0) {
+        await supabase.from('message_counts').update({ count: 0, reset_at: null }).eq('user_id', userId)
+        mc = { count: 0, reset_at: null }
+      }
+      if (mc.count >= limit) {
         return Response.json({ error: 'limit_reached', reset_at: mc.reset_at }, { status: 429 })
       }
+    } else {
+      await supabase.from('message_counts').insert({ user_id: userId, count: 0, reset_at: null })
     }
   }
 
@@ -47,7 +51,6 @@ export async function POST(request) {
     ...messages.map(m => ({ role: m.role, content: m.content })),
   ]
 
-  let fullResponse = ''
   const encoder = new TextEncoder()
 
   const stream = new ReadableStream({
@@ -62,7 +65,7 @@ export async function POST(request) {
         })
         for await (const chunk of completion) {
           const text = chunk.choices[0]?.delta?.content || ''
-          if (text) { fullResponse += text; controller.enqueue(encoder.encode(text)) }
+          if (text) controller.enqueue(encoder.encode(text))
         }
       } catch {
         controller.enqueue(encoder.encode('Erro ao processar. Tente novamente.'))
@@ -72,8 +75,8 @@ export async function POST(request) {
       if (!skipLimit) {
         const { data: mc } = await supabase.from('message_counts').select('count, reset_at').eq('user_id', userId).single().catch(() => ({ data: null }))
         if (mc) {
-          const newCount = Math.max(0, mc.count - 1)
-          const resetAt = newCount === 0 && !mc.reset_at ? new Date(Date.now() + 7 * 3600 * 1000).toISOString() : mc.reset_at
+          const newCount = Math.min(limit, mc.count + 1)
+          const resetAt = newCount >= limit && !mc.reset_at ? new Date(Date.now() + 7 * 3600 * 1000).toISOString() : mc.reset_at
           await supabase.from('message_counts').update({ count: newCount, reset_at: resetAt }).eq('user_id', userId).catch(() => {})
         }
       }

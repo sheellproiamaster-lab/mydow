@@ -77,13 +77,11 @@ function LoginModal({ onClose }) {
     });
     if (authErr) { setError(authErr.message); setLoading(false); return; }
     if (data.user) {
-      await supabase.from('users').upsert({
-        id: data.user.id, email: form.email, name: form.nome,
-        plan: 'free', accepted_terms: false,
-      });
-      await supabase.from('message_counts').upsert({
-        user_id: data.user.id, count: 20, reset_at: null,
-      });
+      await fetch('/api/user/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: data.user.id, email: form.email, name: form.nome }),
+      }).catch(() => {})
     }
     router.push('/chat');
   }

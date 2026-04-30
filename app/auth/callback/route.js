@@ -6,7 +6,7 @@ export async function GET(request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
 
-  // Create redirect response FIRST — cookies set on this object survive the redirect
+  // Create redirect response FIRST so cookies survive the redirect
   const response = NextResponse.redirect(`${origin}/chat`)
 
   if (!code) return response
@@ -18,17 +18,24 @@ export async function GET(request) {
       cookies: {
         get(name) { return request.cookies.get(name)?.value },
         set(name, value, options) { response.cookies.set({ name, value, ...options }) },
-        remove(name, options) { response.cookies.delete(name) },
+        remove(name, options) { response.cookies.set({ name, value: '', ...options }) },
       },
     }
   )
 
-  const { data: { session } } = await supabase.auth.exchangeCodeForSession(code)
+  let session = null
+  try {
+    const { data } = await supabase.auth.exchangeCodeForSession(code)
+    session = data?.session
+  } catch {
+    return response
+  }
 
   if (session?.user) {
     const { user } = session
     const admin = getSupabaseAdmin()
     const { data: existing } = await admin.from('users').select('id').eq('id', user.id).single()
+
     if (!existing) {
       await admin.from('users').insert({
         id: user.id,
@@ -38,9 +45,10 @@ export async function GET(request) {
         plan: 'free',
         accepted_terms: false,
       }).catch(() => {})
+
       await admin.from('message_counts').insert({
         user_id: user.id,
-        count: 20,
+        count: 0,
         reset_at: null,
       }).catch(() => {})
     }

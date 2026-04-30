@@ -186,8 +186,8 @@ function LGPDModal({ user, onAccept, t }) {
 // ─────────────────────────── USAGE CIRCLE ────────────────────────
 function UsageModal({ user, msgCount, onClose, onOpenUpgrade }) {
   const limit = PLAN_LIMITS[user.plan] || 20
-  const remaining = msgCount?.count ?? limit
-  const used = Math.max(0, limit - remaining)
+  const used = msgCount?.count ?? 0
+  const remaining = Math.max(0, limit - used)
   const isPro = user.plan === 'pro'
   const isMaxed = remaining <= 0 && !isPro
   const resetAt = msgCount?.reset_at
@@ -865,8 +865,7 @@ function TopBar({ onOpenSideMenu, onOpenUpgrade, onOpenKnowMydow, t }) {
 // BUG 3 FIX: cards create conversation and send message immediately
 function ChatHome({ user, msgCount, onSend, onOpenSideMenu, onOpenUpgrade, onOpenKnowMydow, onOpenAgents, t }) {
   const limit = PLAN_LIMITS[user.plan] || 20
-  const remaining = msgCount?.count ?? limit
-  const isLimited = remaining <= 0 && user.plan !== 'pro'
+  const isLimited = (msgCount?.count ?? 0) >= limit && user.plan !== 'pro'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--t-bg)' }}>
@@ -906,7 +905,8 @@ function ChatHome({ user, msgCount, onSend, onOpenSideMenu, onOpenUpgrade, onOpe
 // ─────────────────────────── CONVERSATION VIEW ───────────────────
 function ConversationView({ messages, isStreaming, onSend, onFileSelect, onOpenSideMenu, onOpenUpgrade, onOpenKnowMydow, user, msgCount, t }) {
   const bottomRef = useRef(null)
-  const isLimited = (msgCount?.count ?? 1) <= 0 && user.plan !== 'pro'
+  const limit = PLAN_LIMITS[user.plan] || 20
+  const isLimited = (msgCount?.count ?? 0) >= limit && user.plan !== 'pro'
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isStreaming])
 
@@ -967,7 +967,7 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
   const [messages, setMessages] = useState([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [conversations, setConversations] = useState(initialConversations || [])
-  const [msgCount, setMsgCount] = useState(messageCount || { count: 20, reset_at: null })
+  const [msgCount, setMsgCount] = useState(messageCount || { count: 0, reset_at: null })
   const [userMemory, setUserMemory] = useState(initialMemory || { field1: '', field2: '', field3: '' })
   const activeConvIdRef = useRef(null)
   const messagesRef = useRef([])
@@ -1010,11 +1010,16 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
   }, [])
 
   const handleSelectConversation = useCallback(async (convId) => {
-    const { data } = await supabase.from('messages').select('*').eq('conversation_id', convId).order('created_at', { ascending: true })
-    setMessages(data || [])
+    const res = await fetch('/api/conversation/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversationId: convId }),
+    }).catch(() => null)
+    const data = res?.ok ? await res.json() : []
+    setMessages(Array.isArray(data) ? data : [])
     setActiveConvId(convId)
     setView('conversation')
-  }, [supabase])
+  }, [])
 
   // ── BUG 2 & 3 FIX: reliable send with conversation creation ─────
   const handleSend = useCallback(async (text) => {
@@ -1031,8 +1036,14 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
       // Create conversation if none active
       if (!convId) {
         const title = text.length > 42 ? text.slice(0, 39) + '...' : text
-        const { data: newConv, error } = await supabase.from('conversations').insert({ user_id: user.id, title, is_favorite: false }).select().single()
-        if (error || !newConv) { setIsStreaming(false); return }
+        const res = await fetch('/api/conversation/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, title }),
+        })
+        if (!res.ok) { setIsStreaming(false); return }
+        const newConv = await res.json()
+        if (!newConv?.id) { setIsStreaming(false); return }
         convId = newConv.id
         setActiveConvId(convId)
         activeConvIdRef.current = convId
@@ -1067,7 +1078,10 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
       if (res.status === 429) {
         const data = await res.json()
         setMessages(prev => prev.filter(m => m.id !== assistantId))
-        setMsgCount(prev => ({ ...prev, count: 0, reset_at: data.reset_at }))
+        setMsgCount(prev => {
+          const limit = PLAN_LIMITS[user.plan] || 20
+          return { ...prev, count: limit, reset_at: data.reset_at }
+        })
         setIsStreaming(false)
         return
       }
@@ -1092,11 +1106,12 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
       // Finalize message (remove streaming flag)
       setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: full, streaming: false } : m))
 
-      // Update local message count
+      // Update local message count (count = used, increments)
       setMsgCount(prev => {
         if (user.plan === 'pro') return prev
-        const newCount = Math.max(0, prev.count - 1)
-        const resetAt = newCount === 0 && !prev.reset_at ? new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString() : prev.reset_at
+        const limit = PLAN_LIMITS[user.plan] || 20
+        const newCount = Math.min(limit, prev.count + 1)
+        const resetAt = newCount >= limit && !prev.reset_at ? new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString() : prev.reset_at
         return { ...prev, count: newCount, reset_at: resetAt }
       })
 
@@ -1116,8 +1131,13 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
     let convId = activeConvIdRef.current
     if (!convId) {
       const title = `Análise: ${file.name}`
-      const { data: newConv } = await supabase.from('conversations').insert({ user_id: user.id, title, is_favorite: false }).select().single()
-      if (!newConv) { setIsStreaming(false); return }
+      const res = await fetch('/api/conversation/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, title }),
+      })
+      const newConv = res?.ok ? await res.json() : null
+      if (!newConv?.id) { setIsStreaming(false); return }
       convId = newConv.id
       setActiveConvId(convId)
       activeConvIdRef.current = convId
@@ -1131,16 +1151,26 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
 
     try {
       const isImage = file.type.startsWith('image/')
+      const isText = file.type === 'text/plain' || file.name.endsWith('.md') || file.name.endsWith('.txt')
+
       let fileBase64 = null
+      let fileText = null
+
       if (isImage) {
-        const buffer = await file.arrayBuffer()
-        fileBase64 = btoa(String.fromCharCode(...new Uint8Array(buffer)))
+        fileBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result.split(',')[1])
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+      } else if (isText) {
+        fileText = await file.text()
       }
 
       const res = await fetch('/api/document/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileBase64, mimeType: file.type, fileName: file.name, userId: user.id, userPlan: user.plan, language: settings.language }),
+        body: JSON.stringify({ fileBase64, fileText, mimeType: file.type, fileName: file.name, userId: user.id, userPlan: user.plan, language: settings.language }),
       })
 
       if (res.status === 429) {
@@ -1157,35 +1187,54 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
 
   // ── Conversation management ────────────────────────────────────
   const handleDeleteConversation = useCallback(async (convId) => {
-    await supabase.from('messages').delete().eq('conversation_id', convId)
-    await supabase.from('conversations').delete().eq('id', convId)
+    await fetch('/api/conversation/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversationId: convId, userId: user.id }),
+    }).catch(() => {})
     setConversations(prev => prev.filter(c => c.id !== convId))
     if (activeConvIdRef.current === convId) handleNewConversation()
-  }, [supabase, handleNewConversation])
+  }, [user.id, handleNewConversation])
 
   const handleFavoriteConversation = useCallback(async (convId, fav) => {
-    await supabase.from('conversations').update({ is_favorite: fav }).eq('id', convId)
+    await fetch('/api/conversation/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversationId: convId, userId: user.id, patch: { is_favorite: fav } }),
+    }).catch(() => {})
     setConversations(prev => prev.map(c => c.id === convId ? { ...c, is_favorite: fav } : c))
-  }, [supabase])
+  }, [user.id])
 
   const handleRenameConversation = useCallback(async (convId, title) => {
-    await supabase.from('conversations').update({ title }).eq('id', convId)
+    await fetch('/api/conversation/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conversationId: convId, userId: user.id, patch: { title } }),
+    }).catch(() => {})
     setConversations(prev => prev.map(c => c.id === convId ? { ...c, title } : c))
-  }, [supabase])
+  }, [user.id])
 
   // ── Memory ─────────────────────────────────────────────────────
   const handleSaveMemory = useCallback(async (fields) => {
-    await supabase.from('memory').upsert({ user_id: user.id, ...fields, updated_at: new Date().toISOString() })
+    await fetch('/api/memory/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id, ...fields }),
+    }).catch(() => {})
     setUserMemory(fields)
-  }, [supabase, user.id])
+  }, [user.id])
 
   // ── Settings (BUG 7 FIX: save to Supabase preferences jsonb) ──
   const handleUpdateSettings = useCallback(async (patch) => {
     const newSettings = { ...settings, ...patch }
     setSettings(newSettings)
-    await supabase.from('users').update({ preferences: newSettings }).eq('id', user.id).catch(() => {})
+    await fetch('/api/user/preferences', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id, preferences: newSettings }),
+    }).catch(() => {})
     applyTheme(newSettings.theme === 'dark')
-  }, [settings, supabase, user.id])
+  }, [settings, user.id])
 
   // ── Account deletion ───────────────────────────────────────────
   const handleDeleteAccount = useCallback(async () => {

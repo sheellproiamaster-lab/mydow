@@ -541,7 +541,7 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
-  const [msgCount, setMsgCount] = useState(messageCount || { count: 20, reset_at: null })
+  const [msgCount, setMsgCount] = useState(messageCount || { count: 0, reset_at: null })
   const bottomRef = useRef(null)
   const textareaRef = useRef(null)
   const messagesRef = useRef([])
@@ -549,7 +549,8 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
   useEffect(() => { messagesRef.current = messages }, [messages])
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages, isStreaming])
 
-  const isLimited = (msgCount?.count ?? 1) <= 0 && user.plan !== 'pro'
+  const limit = PLAN_LIMITS[user.plan] || 20
+  const isLimited = (msgCount?.count ?? 0) >= limit && user.plan !== 'pro'
 
   async function handleSend(text) {
     const msg = (text || input).trim()
@@ -583,7 +584,7 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
       if (res.status === 429) {
         const d = await res.json()
         setMessages(prev => prev.filter(m => m.id !== assistantId))
-        setMsgCount(prev => ({ ...prev, count: 0, reset_at: d.reset_at }))
+        setMsgCount(prev => ({ ...prev, count: PLAN_LIMITS[user.plan] || 20, reset_at: d.reset_at }))
         setIsStreaming(false)
         return
       }
@@ -600,8 +601,9 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
       setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: full, streaming: false } : m))
       setMsgCount(prev => {
         if (user.plan === 'pro') return prev
-        const nc = Math.max(0, prev.count - 1)
-        const ra = nc === 0 && !prev.reset_at ? new Date(Date.now() + 7 * 3600000).toISOString() : prev.reset_at
+        const lim = PLAN_LIMITS[user.plan] || 20
+        const nc = Math.min(lim, prev.count + 1)
+        const ra = nc >= lim && !prev.reset_at ? new Date(Date.now() + 7 * 3600000).toISOString() : prev.reset_at
         return { ...prev, count: nc, reset_at: ra }
       })
     } catch {
@@ -706,7 +708,7 @@ export default function AgentPageClient({ slug, user, messageCount, memory }) {
         </div>
         {user.plan !== 'pro' && (
           <div style={{ fontSize: 12, color: 'var(--t-muted)', fontWeight: 600, flexShrink: 0 }}>
-            {messageCount?.count ?? 20}<span style={{ opacity: 0.5 }}>/{limit}</span>
+            {Math.max(0, limit - (messageCount?.count ?? 0))}<span style={{ opacity: 0.5 }}>/{limit}</span>
           </div>
         )}
         <img src="/images/mydow.png" alt="Mydow" style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />

@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 const WEEKLY_LIMITS = { free: 3, plus: 7, pro: Infinity }
 
 export async function POST(request) {
-  const { fileBase64, mimeType, fileName, userMessage, userId, userPlan = 'free', language = 'pt' } = await request.json()
+  const { fileBase64, fileText, mimeType, fileName, userMessage, userId, userPlan = 'free', language = 'pt' } = await request.json()
   if (!userId) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = getSupabaseAdmin()
@@ -37,15 +37,22 @@ export async function POST(request) {
         role: 'user',
         content: [
           { type: 'image_url', image_url: { url: `data:${mimeType};base64,${fileBase64}` } },
-          { type: 'text', text: userMessage || `Analise este arquivo (${fileName}) e forneça um resumo detalhado do conteúdo. Responda em ${langStr}.` },
+          { type: 'text', text: userMessage || `Analise esta imagem (${fileName}) e descreva o conteúdo em detalhes. Responda em ${langStr}.` },
         ],
+      },
+    ]
+  } else if (fileText) {
+    messages = [
+      {
+        role: 'user',
+        content: `Analise o seguinte conteúdo do arquivo "${fileName}" e ${userMessage || 'forneça um resumo detalhado'}. Responda em ${langStr}.\n\n---\n${fileText.slice(0, 12000)}`,
       },
     ]
   } else {
     messages = [
       {
         role: 'user',
-        content: `Analise o conteúdo do arquivo "${fileName}" e ${userMessage || 'forneça um resumo detalhado'}. Responda em ${langStr}.`,
+        content: `O arquivo "${fileName}" foi enviado mas não pôde ser lido diretamente. Por favor informe ao usuário que arquivos PDF e DOCX precisam ter seu conteúdo copiado e colado no chat. Responda em ${langStr}.`,
       },
     ]
   }
