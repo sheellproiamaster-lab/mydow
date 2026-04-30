@@ -6,7 +6,6 @@ export async function GET(request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
 
-  // Create redirect response FIRST so cookies survive the redirect
   const response = NextResponse.redirect(`${origin}/chat`)
 
   if (!code) return response
@@ -23,35 +22,29 @@ export async function GET(request) {
     }
   )
 
-  let session = null
   try {
     const { data } = await supabase.auth.exchangeCodeForSession(code)
-    session = data?.session
-  } catch {
-    return response
-  }
+    const user = data?.session?.user
 
-  if (session?.user) {
-    const { user } = session
-    const admin = getSupabaseAdmin()
-    const { data: existing } = await admin.from('users').select('id').eq('id', user.id).single()
-
-    if (!existing) {
-      await admin.from('users').insert({
+    if (user) {
+      const admin = getSupabaseAdmin()
+      await admin.from('users').upsert({
         id: user.id,
         email: user.email,
         name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Usuário',
         avatar_url: user.user_metadata?.avatar_url || null,
         plan: 'free',
         accepted_terms: false,
-      }).catch(() => {})
+      }, { onConflict: 'id', ignoreDuplicates: true })
 
-      await admin.from('message_counts').insert({
+      await admin.from('message_counts').upsert({
         user_id: user.id,
         count: 0,
         reset_at: null,
-      }).catch(() => {})
+      }, { onConflict: 'user_id', ignoreDuplicates: true })
     }
+  } catch (err) {
+    console.error('callback error:', err)
   }
 
   return response
