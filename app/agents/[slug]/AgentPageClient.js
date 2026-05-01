@@ -606,6 +606,11 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
         const ra = nc >= lim && !prev.reset_at ? new Date(Date.now() + 7 * 3600000).toISOString() : prev.reset_at
         return { ...prev, count: nc, reset_at: ra }
       })
+      await fetch('/api/message-count/increment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      }).catch(() => {})
     } catch {
       setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao conectar. Tente novamente.', streaming: false } : m))
     }
@@ -622,7 +627,7 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
           <p style={{ fontSize: 12, color: 'var(--t-muted)', margin: '0 0 28px', textAlign: 'center', opacity: 0.7 }}>{meta.tags}</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: 10, width: '100%', maxWidth: 540 }}>
             {meta.suggestions.map(s => (
-              <button key={s} onClick={() => handleSend(s)} disabled={isLimited}
+              <button key={s} onClick={() => !isLimited && handleSend(s)} disabled={isLimited}
                 style={{ padding: '12px 14px', background: 'var(--t-card)', border: '1.5px solid var(--t-border)', borderRadius: 12, fontSize: 13, color: 'var(--t-text)', cursor: isLimited ? 'not-allowed' : 'pointer', textAlign: 'left', fontFamily: 'inherit', lineHeight: 1.4, transition: 'all 0.2s', opacity: isLimited ? 0.5 : 1 }}
                 onMouseEnter={e => { if (!isLimited) { e.currentTarget.style.borderColor = meta.accentColor; e.currentTarget.style.background = 'var(--t-card-hover)' } }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--t-border)'; e.currentTarget.style.background = 'var(--t-card)' }}
@@ -664,7 +669,7 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', background: 'var(--t-input)', border: '1.5px solid var(--t-border)', borderRadius: 18, padding: '8px 12px' }}>
           <textarea ref={textareaRef} value={input}
             onChange={e => { setInput(e.target.value); const ta = e.target; ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 120) + 'px' }}
-            onKeyDown={e => { if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); handleSend() } }}
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
             disabled={isLimited || isStreaming} placeholder={isLimited ? 'Limite atingido' : `Fale com ${meta.name}...`} rows={1}
             style={{ flex: 1, border: 'none', outline: 'none', resize: 'none', fontSize: 14, fontFamily: 'inherit', color: 'var(--t-text)', background: 'transparent', lineHeight: 1.5, maxHeight: 120 }}
           />
