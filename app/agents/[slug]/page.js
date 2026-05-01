@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import AgentPageClient from './AgentPageClient'
 
@@ -12,10 +13,11 @@ export default async function AgentPage({ params }) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/')
 
+  const admin = getSupabaseAdmin()
   const [userRes, mcRes, memRes] = await Promise.all([
-    supabase.from('users').select('*').eq('id', user.id).single(),
-    supabase.from('message_counts').select('*').eq('user_id', user.id).single(),
-    supabase.from('memory').select('*').eq('user_id', user.id).single(),
+    admin.from('users').select('*').eq('id', user.id).single(),
+    admin.from('message_counts').select('*').eq('user_id', user.id).single(),
+    admin.from('memory').select('*').eq('user_id', user.id).single(),
   ])
 
   const userProfile = userRes.data || {
