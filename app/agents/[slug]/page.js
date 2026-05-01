@@ -31,7 +31,7 @@ export default async function AgentPage({ params }) {
     <AgentPageClient
       slug={slug}
       user={userProfile}
-      messageCount={mcRes.data || { count: 20, reset_at: null }}
+      messageCount={mcRes.data || { count: 0, reset_at: null }}
       memory={memRes.data || { field1: '', field2: '', field3: '' }}
     />
   )
