@@ -200,6 +200,29 @@ function SnakeGame() {
     const h=(e)=>{const map={'ArrowUp':[-1,0],'ArrowDown':[1,0],'ArrowLeft':[0,-1],'ArrowRight':[0,1],'w':[-1,0],'s':[1,0],'a':[0,-1],'d':[0,1]};const nd=map[e.key];if(!nd)return;const cd=dirRef.current;if(nd[0]===-cd[0]&&nd[1]===-cd[1])return;dirRef.current=nd;e.preventDefault()}
     window.addEventListener('keydown',h);return()=>window.removeEventListener('keydown',h)
   },[])
+
+  const touchStart=useRef(null)
+  useEffect(()=>{
+    const ts=(e)=>{const t=e.touches[0];touchStart.current={x:t.clientX,y:t.clientY}}
+    const te=(e)=>{
+      if(!touchStart.current)return
+      const t=e.changedTouches[0]
+      const dx=t.clientX-touchStart.current.x
+      const dy=t.clientY-touchStart.current.y
+      if(Math.abs(dx)<20&&Math.abs(dy)<20)return
+      let nd
+      if(Math.abs(dx)>Math.abs(dy))nd=dx>0?[0,1]:[0,-1]
+      else nd=dy>0?[1,0]:[-1,0]
+      const cd=dirRef.current
+      if(nd[0]===-cd[0]&&nd[1]===-cd[1])return
+      dirRef.current=nd
+      if(!running&&!dead)setRunning(true)
+      touchStart.current=null
+    }
+    window.addEventListener('touchstart',ts,{passive:true})
+    window.addEventListener('touchend',te)
+    return()=>{window.removeEventListener('touchstart',ts);window.removeEventListener('touchend',te)}
+  },[running,dead])
   useEffect(()=>{
     if(!running)return
     const iv=setInterval(()=>{
