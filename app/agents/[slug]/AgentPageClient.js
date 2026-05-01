@@ -542,6 +542,8 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [msgCount, setMsgCount] = useState(messageCount || { count: 0, reset_at: null })
+  const [convId, setConvId] = useState(null)
+  const convIdRef = useRef(null)
   const bottomRef = useRef(null)
   const textareaRef = useRef(null)
   const messagesRef = useRef([])
@@ -567,6 +569,32 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
     const history = [...messagesRef.current, userMsg].map(m => ({ role: m.role, content: m.content }))
 
     try {
+      // Cria conversa se não existir
+      let currentConvId = convIdRef.current
+      if (!currentConvId) {
+        const title = `${meta.name}: ${msg.length > 40 ? msg.slice(0, 37) + '...' : msg}`
+        const res = await fetch('/api/conversation/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, title }),
+        })
+        const newConv = res.ok ? await res.json() : null
+        if (newConv?.id) {
+          currentConvId = newConv.id
+          convIdRef.current = currentConvId
+          setConvId(currentConvId)
+        }
+      }
+
+      // Salva mensagem do usuário
+      if (currentConvId) {
+        await fetch('/api/conversation/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ conversationId: currentConvId, role: 'user', content: msg }),
+        }).catch(() => {})
+      }
+
       const res = await fetch('/api/agents/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -577,7 +605,8 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
           memory,
           userPlan: user.plan,
           agentSlug: slug,
-          language: user.preferences?.language || 'pt',
+          conversationId: currentConvId,
+          language: 'pt',
         }),
       })
 
