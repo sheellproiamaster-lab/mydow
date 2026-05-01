@@ -55,6 +55,7 @@ export async function POST(request) {
 
   const stream = new ReadableStream({
     async start(controller) {
+      let fullResponse = ''
       try {
         const completion = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
@@ -63,7 +64,6 @@ export async function POST(request) {
           max_tokens: 600,
           temperature: 0.5,
         })
-        let fullResponse = ''
         for await (const chunk of completion) {
           const text = chunk.choices[0]?.delta?.content || ''
           if (text) { fullResponse += text; controller.enqueue(encoder.encode(text)) }
