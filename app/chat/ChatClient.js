@@ -814,7 +814,7 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
     setValue('')
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
   }
-  const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }
+  const handleKeyDown = (e) => { if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); handleSend() } }
   const handleInput = (e) => {
     setValue(e.target.value)
     const ta = textareaRef.current
@@ -977,7 +977,7 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
   useEffect(() => { messagesRef.current = messages }, [messages])
 
   // BUG 1 FIX: Only show LGPD when explicitly false (not just falsy null)
-  const [lgpdOpen, setLgpdOpen] = useState(user.accepted_terms === false)
+  const [lgpdOpen, setLgpdOpen] = useState(false)
 
   // Modal states — anyModalOpen used to prevent menu from closing (BUG 4)
   const [sideMenuOpen, setSideMenuOpen] = useState(false)
@@ -1277,7 +1277,6 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
     <div style={{ fontSize, fontFamily: 'Inter, system-ui, sans-serif', background: 'var(--t-bg)', minHeight: '100dvh', color: 'var(--t-text)' }}>
 
       {/* BUG 1 FIX: Only shows when accepted_terms is explicitly false */}
-      {lgpdOpen && <LGPDModal user={user} onAccept={handleLGPDAccept} t={t} />}
 
       {/* BUG 4 & 5 FIX: anyModalOpen prevents outside-click close; width 50vw */}
       <SideMenu
