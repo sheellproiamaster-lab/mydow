@@ -57,10 +57,10 @@ const LANGUAGES = [
 
 const GAMES_LIST = [
   { id: 'tictactoe', name: 'Jogo da Velha', icon: '⭕', desc: 'Você vs IA — Quem vence?', active: true },
-  { id: 'memory', name: 'Jogo da Memória', icon: '🃏', desc: 'Encontre os pares', active: false },
-  { id: 'snake', name: 'Snake', icon: '🐍', desc: 'Clássico jogo da cobrinha', active: false },
+  { id: 'memory', name: 'Jogo da Memória', icon: '🃏', desc: 'Encontre os pares', active: true },
+  { id: 'snake', name: 'Snake', icon: '🐍', desc: 'Clássico jogo da cobrinha', active: true },
+  { id: 'blockblast', name: 'Block Blast 3D', icon: '🧱', desc: 'Quebre blocos em 3D', active: true },
   { id: 'chess', name: 'Xadrez', icon: '♟️', desc: 'Desafie a IA no xadrez', active: false },
-  { id: 'blockblast', name: 'Block Blast 3D', icon: '🧱', desc: 'Quebre blocos em 3D', active: false },
   { id: 'strategic', name: 'Jogo Estratégico Mydow', icon: '🎯', desc: 'Estratégia exclusiva Mydow', active: false },
 ]
 
@@ -98,98 +98,243 @@ function TicTacToe() {
   const [winner, setWinner] = useState(null)
   const [winLine, setWinLine] = useState(null)
   const [score, setScore] = useState({ player: 0, ai: 0, draws: 0 })
-
   const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]]
-
-  function checkWin(b) {
-    for (const line of LINES) {
-      const [a, bl, c] = line
-      if (b[a] && b[a] === b[bl] && b[a] === b[c]) return { winner: b[a], line }
-    }
-    return null
-  }
-
-  function minimax(b, isMax) {
-    const res = checkWin(b)
-    if (res) return res.winner === 'O' ? 10 : -10
-    if (b.every(c => c)) return 0
-    const scores = []
-    for (let i = 0; i < 9; i++) {
-      if (!b[i]) {
-        const nb = [...b]; nb[i] = isMax ? 'O' : 'X'
-        scores.push(minimax(nb, !isMax))
-      }
-    }
-    return isMax ? Math.max(...scores) : Math.min(...scores)
-  }
-
-  function bestMove(b) {
-    let best = -Infinity, move = -1
-    for (let i = 0; i < 9; i++) {
-      if (!b[i]) {
-        const nb = [...b]; nb[i] = 'O'
-        const s = minimax(nb, false)
-        if (s > best) { best = s; move = i }
-      }
-    }
-    return move
-  }
-
+  function checkWin(b) { for (const line of LINES) { const [a,bl,c]=line; if(b[a]&&b[a]===b[bl]&&b[a]===b[c]) return{winner:b[a],line} } return null }
+  function minimax(b,isMax) { const res=checkWin(b); if(res) return res.winner==='O'?10:-10; if(b.every(c=>c)) return 0; const scores=[]; for(let i=0;i<9;i++){if(!b[i]){const nb=[...b];nb[i]=isMax?'O':'X';scores.push(minimax(nb,!isMax))}} return isMax?Math.max(...scores):Math.min(...scores) }
+  function bestMove(b) { let best=-Infinity,move=-1; for(let i=0;i<9;i++){if(!b[i]){const nb=[...b];nb[i]='O';const s=minimax(nb,false);if(s>best){best=s;move=i}}} return move }
   function handleClick(i) {
-    if (!playerTurn || board[i] || winner) return
-    const nb = [...board]; nb[i] = 'X'
-    const res = checkWin(nb)
-    setBoard(nb)
-    if (res) { setWinner('X'); setWinLine(res.line); setScore(s => ({ ...s, player: s.player + 1 })); return }
-    if (nb.every(c => c)) { setWinner('draw'); setScore(s => ({ ...s, draws: s.draws + 1 })); return }
+    if(!playerTurn||board[i]||winner) return
+    const nb=[...board];nb[i]='X';const res=checkWin(nb);setBoard(nb)
+    if(res){setWinner('X');setWinLine(res.line);setScore(s=>({...s,player:s.player+1}));return}
+    if(nb.every(c=>c)){setWinner('draw');setScore(s=>({...s,draws:s.draws+1}));return}
     setPlayerTurn(false)
-    setTimeout(() => {
-      const m = bestMove(nb)
-      const ab = [...nb]; ab[m] = 'O'
-      const ar = checkWin(ab)
-      setBoard(ab)
-      if (ar) { setWinner('O'); setWinLine(ar.line); setScore(s => ({ ...s, ai: s.ai + 1 })) }
-      else if (ab.every(c => c)) { setWinner('draw'); setScore(s => ({ ...s, draws: s.draws + 1 })) }
-      else setPlayerTurn(true)
-    }, 450)
+    setTimeout(()=>{const m=bestMove(nb);const ab=[...nb];ab[m]='O';const ar=checkWin(ab);setBoard(ab);if(ar){setWinner('O');setWinLine(ar.line);setScore(s=>({...s,ai:s.ai+1}))}else if(ab.every(c=>c)){setWinner('draw');setScore(s=>({...s,draws:s.draws+1}))}else setPlayerTurn(true)},450)
   }
-
-  function reset() { setBoard(Array(9).fill(null)); setWinner(null); setWinLine(null); setPlayerTurn(true) }
-
+  function reset(){setBoard(Array(9).fill(null));setWinner(null);setWinLine(null);setPlayerTurn(true)}
   return (
-    <div style={{ textAlign: 'center' }}>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 28, marginBottom: 20 }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: ORANGE }}>{score.player}</div>
-          <div style={{ fontSize: 11, color: 'var(--t-muted)' }}>Você (X)</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--t-muted)' }}>{score.draws}</div>
-          <div style={{ fontSize: 11, color: 'var(--t-muted)' }}>Empates</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: 22, fontWeight: 800, color: '#e74c3c' }}>{score.ai}</div>
-          <div style={{ fontSize: 11, color: 'var(--t-muted)' }}>IA (O)</div>
-        </div>
-      </div>
-      <div style={{ display: 'inline-grid', gridTemplateColumns: 'repeat(3, 80px)', gap: 8, marginBottom: 20 }}>
-        {board.map((cell, i) => (
-          <button key={i} onClick={() => handleClick(i)}
-            style={{ width: 80, height: 80, fontSize: 34, fontWeight: 900, border: '2px solid var(--t-border)', borderRadius: 14, background: winLine?.includes(i) ? (winner === 'X' ? '#2ecc7130' : '#e74c3c30') : 'var(--t-card)', cursor: cell || winner ? 'default' : 'pointer', color: cell === 'X' ? ORANGE : '#e74c3c', transition: 'all 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {cell}
-          </button>
+    <div style={{textAlign:'center'}}>
+      <div style={{display:'flex',justifyContent:'center',gap:28,marginBottom:20}}>
+        {[['Você (X)',score.player,ORANGE],['Empates',score.draws,'var(--t-muted)'],['IA (O)',score.ai,'#e74c3c']].map(([l,v,c])=>(
+          <div key={l}><div style={{fontSize:22,fontWeight:800,color:c}}>{v}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>{l}</div></div>
         ))}
       </div>
-      {winner ? (
-        <div>
-          <p style={{ fontSize: 18, fontWeight: 700, marginBottom: 14, color: winner === 'X' ? ORANGE : winner === 'O' ? '#e74c3c' : 'var(--t-muted)' }}>
-            {winner === 'X' ? '🎉 Você venceu!' : winner === 'O' ? '🤖 IA venceu!' : '🤝 Empate!'}
-          </p>
-          <button onClick={reset} style={{ padding: '10px 28px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Jogar de Novo</button>
+      <div style={{display:'inline-grid',gridTemplateColumns:'repeat(3,80px)',gap:8,marginBottom:20}}>
+        {board.map((cell,i)=>(
+          <button key={i} onClick={()=>handleClick(i)} style={{width:80,height:80,fontSize:34,fontWeight:900,border:'3px solid var(--t-border)',borderRadius:14,background:winLine?.includes(i)?(winner==='X'?'#2ecc7130':'#e74c3c30'):'var(--t-card)',cursor:cell||winner?'default':'pointer',color:cell==='X'?ORANGE:'#e74c3c',transition:'all 0.15s',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 4px 0 rgba(0,0,0,0.18)',transform:'translateY(-2px)'}}>{cell}</button>
+        ))}
+      </div>
+      {winner?(<div><p style={{fontSize:18,fontWeight:700,marginBottom:14,color:winner==='X'?ORANGE:winner==='O'?'#e74c3c':'var(--t-muted)'}}>{winner==='X'?'🎉 Você venceu!':winner==='O'?'🤖 IA venceu!':'🤝 Empate!'}</p><button onClick={reset} style={{padding:'10px 28px',background:ORANGE,color:'#fff',border:'none',borderRadius:12,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Jogar de Novo</button></div>)
+      :(<p style={{fontSize:13,color:'var(--t-muted)'}}>{playerTurn?'Sua vez — clique (X)':'🤖 IA pensando...'}</p>)}
+    </div>
+  )
+}
+
+// ── MEMORY GAME ───────────────────────────────────────────────────
+const MEMORY_EMOJIS=['🌟','🎯','🚀','🌈','🎮','💎','🔥','🌺','🦋','🎸','🍀','🎭']
+function MemoryGame() {
+  const [cards,setCards]=useState([])
+  const [flipped,setFlipped]=useState([])
+  const [matched,setMatched]=useState([])
+  const [moves,setMoves]=useState(0)
+  const [best,setBest]=useState(0)
+  const [won,setWon]=useState(false)
+  const [blocking,setBlocking]=useState(false)
+  function init(){const pairs=[...MEMORY_EMOJIS,...MEMORY_EMOJIS].map((e,i)=>({id:i,emoji:e,key:Math.random()})).sort(()=>Math.random()-0.5);setCards(pairs);setFlipped([]);setMatched([]);setMoves(0);setWon(false)}
+  useEffect(()=>{init()},[])
+  function flip(id){
+    if(blocking||flipped.includes(id)||matched.includes(cards[id]?.emoji)) return
+    const nf=[...flipped,id];setFlipped(nf)
+    if(nf.length===2){
+      setMoves(m=>m+1);setBlocking(true)
+      const [a,b]=nf
+      if(cards[a]?.emoji===cards[b]?.emoji){
+        const nm=[...matched,cards[a].emoji];setMatched(nm);setFlipped([]);setBlocking(false)
+        if(nm.length===MEMORY_EMOJIS.length){setWon(true);const t=moves+1;if(!best||t<best)setBest(t)}
+      }else{setTimeout(()=>{setFlipped([]);setBlocking(false)},900)}
+    }
+  }
+  return(
+    <div style={{textAlign:'center',padding:'0 8px'}}>
+      <div style={{display:'flex',justifyContent:'center',gap:24,marginBottom:16}}>
+        <div><div style={{fontSize:20,fontWeight:800,color:ORANGE}}>{moves}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Jogadas</div></div>
+        <div><div style={{fontSize:20,fontWeight:800,color:'#f39c12'}}>👑 {best||'—'}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Recorde</div></div>
+        <div><div style={{fontSize:20,fontWeight:800,color:'#2ecc71'}}>{matched.length}/{MEMORY_EMOJIS.length}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Pares</div></div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:6,maxWidth:380,margin:'0 auto 16px'}}>
+        {cards.map((card,i)=>{
+          const isFlipped=flipped.includes(i)||matched.includes(card.emoji)
+          return(
+            <div key={card.key} onClick={()=>flip(i)} style={{aspectRatio:'1',cursor:'pointer',perspective:500}}>
+              <div style={{width:'100%',height:'100%',position:'relative',transformStyle:'preserve-3d',transform:isFlipped?'rotateY(180deg)':'rotateY(0)',transition:'transform 0.4s'}}>
+                <div style={{position:'absolute',inset:0,background:matched.includes(card.emoji)?'#2ecc7133':'var(--t-card)',border:`2px solid ${matched.includes(card.emoji)?'#2ecc71':ORANGE}`,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,backfaceVisibility:'hidden',transform:'rotateY(180deg)',boxShadow:'0 3px 0 rgba(0,0,0,0.15)'}}>{card.emoji}</div>
+                <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,#667eea,#764ba2)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,backfaceVisibility:'hidden',boxShadow:'0 3px 0 rgba(0,0,0,0.2)'}}>❓</div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      {won?(<div><p style={{fontSize:18,fontWeight:700,color:'#2ecc71',marginBottom:12}}>🎉 Parabéns! {moves} jogadas!</p><button onClick={init} style={{padding:'10px 28px',background:ORANGE,color:'#fff',border:'none',borderRadius:12,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Jogar Novamente</button></div>)
+      :(<button onClick={init} style={{padding:'8px 20px',background:'none',border:'1.5px solid var(--t-border)',borderRadius:10,fontSize:13,cursor:'pointer',fontFamily:'inherit',color:'var(--t-text)'}}>↺ Reiniciar</button>)}
+    </div>
+  )
+}
+
+// ── SNAKE GAME ────────────────────────────────────────────────────
+function SnakeGame() {
+  const COLS=20,ROWS=20,CELL=16
+  const [snake,setSnake]=useState([[10,10],[10,9],[10,8]])
+  const [food,setFood]=useState([5,5])
+  const [running,setRunning]=useState(false)
+  const [dead,setDead]=useState(false)
+  const [score,setScore]=useState(0)
+  const [best,setBest]=useState(0)
+  const dirRef=useRef([0,1])
+  const snakeRef=useRef([[10,10],[10,9],[10,8]])
+  const foodRef=useRef([5,5])
+  const scoreRef=useRef(0)
+  function rndFood(s){let f;do{f=[Math.floor(Math.random()*ROWS),Math.floor(Math.random()*COLS)]}while(s.some(([r,c])=>r===f[0]&&c===f[1]));return f}
+  function reset(){const s=[[10,10],[10,9],[10,8]];snakeRef.current=s;dirRef.current=[0,1];scoreRef.current=0;const f=rndFood(s);foodRef.current=f;setSnake(s);setFood(f);setScore(0);setDead(false);setRunning(false)}
+  useEffect(()=>{
+    const h=(e)=>{const map={'ArrowUp':[-1,0],'ArrowDown':[1,0],'ArrowLeft':[0,-1],'ArrowRight':[0,1],'w':[-1,0],'s':[1,0],'a':[0,-1],'d':[0,1]};const nd=map[e.key];if(!nd)return;const cd=dirRef.current;if(nd[0]===-cd[0]&&nd[1]===-cd[1])return;dirRef.current=nd;e.preventDefault()}
+    window.addEventListener('keydown',h);return()=>window.removeEventListener('keydown',h)
+  },[])
+  useEffect(()=>{
+    if(!running)return
+    const iv=setInterval(()=>{
+      const s=snakeRef.current,d=dirRef.current,f=foodRef.current
+      const head=[s[0][0]+d[0],s[0][1]+d[1]]
+      if(head[0]<0||head[0]>=ROWS||head[1]<0||head[1]>=COLS||s.some(([r,c])=>r===head[0]&&c===head[1])){setDead(true);setRunning(false);if(scoreRef.current>best)setBest(scoreRef.current);return}
+      const ate=head[0]===f[0]&&head[1]===f[1]
+      const ns=ate?[head,...s]:[head,...s.slice(0,-1)];snakeRef.current=ns
+      if(ate){const nf=rndFood(ns);foodRef.current=nf;setFood(nf);scoreRef.current+=10;setScore(sc=>sc+10)}
+      setSnake([...ns])
+    },130)
+    return()=>clearInterval(iv)
+  },[running,best])
+  const SCOLORS=['#2ecc71','#27ae60']
+  return(
+    <div style={{textAlign:'center'}}>
+      <div style={{display:'flex',justifyContent:'center',gap:24,marginBottom:12}}>
+        <div><div style={{fontSize:20,fontWeight:800,color:'#2ecc71'}}>{score}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Score</div></div>
+        <div><div style={{fontSize:20,fontWeight:800,color:'#f39c12'}}>👑 {best}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Recorde</div></div>
+      </div>
+      <div style={{display:'inline-block',border:'3px solid var(--t-border)',borderRadius:12,overflow:'hidden',boxShadow:'0 8px 24px rgba(0,0,0,0.2)',background:'#0d1f0d',marginBottom:12}}>
+        <div style={{display:'grid',gridTemplateColumns:`repeat(${COLS},${CELL}px)`,gridTemplateRows:`repeat(${ROWS},${CELL}px)`}}>
+          {Array.from({length:ROWS*COLS}).map((_,idx)=>{
+            const r=Math.floor(idx/COLS),c=idx%COLS
+            const si=snake.findIndex(([sr,sc])=>sr===r&&sc===c)
+            const isFood=food[0]===r&&food[1]===c,isHead=si===0
+            return(<div key={idx} style={{width:CELL,height:CELL,background:si>=0?(isHead?ORANGE:SCOLORS[si%2]):isFood?'#e74c3c':'transparent',borderRadius:isHead?5:si>=0?3:0,boxShadow:isHead?`0 0 8px ${ORANGE}`:isFood?'0 0 6px #e74c3c':'none'}}/>)
+          })}
         </div>
-      ) : (
-        <p style={{ fontSize: 13, color: 'var(--t-muted)' }}>{playerTurn ? 'Sua vez — clique em uma célula (X)' : '🤖 IA pensando...'}</p>
-      )}
+      </div>
+      <div style={{display:'flex',gap:8,justifyContent:'center',marginBottom:12,flexWrap:'wrap'}}>
+        {[['↑',[-1,0]],['↓',[1,0]],['←',[0,-1]],['→',[0,1]]].map(([label,nd])=>(
+          <button key={label} onClick={()=>{const cd=dirRef.current;if(nd[0]===-cd[0]&&nd[1]===-cd[1])return;dirRef.current=nd;if(!running&&!dead)setRunning(true)}}
+            style={{width:48,height:48,background:'var(--t-card)',border:'2px solid var(--t-border)',borderRadius:12,fontSize:20,cursor:'pointer',boxShadow:'0 4px 0 rgba(0,0,0,0.2)',fontFamily:'inherit'}}>{label}</button>
+        ))}
+      </div>
+      {dead?(<div><p style={{fontSize:16,fontWeight:700,color:'#e74c3c',marginBottom:10}}>😢 Que Pena, Você Perdeu!</p><button onClick={reset} style={{padding:'10px 28px',background:ORANGE,color:'#fff',border:'none',borderRadius:12,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Jogar Novamente</button></div>)
+      :(<button onClick={()=>setRunning(r=>!r)} style={{padding:'10px 28px',background:running?'#e74c3c':ORANGE,color:'#fff',border:'none',borderRadius:12,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>{running?'⏸ Pausar':'▶ Iniciar'}</button>)}
+      <p style={{fontSize:11,color:'var(--t-muted)',marginTop:8}}>Setas do teclado ou botões acima · Mobile: use os botões</p>
+    </div>
+  )
+}
+
+// ── BLOCK BLAST 3D ────────────────────────────────────────────────
+const BB_COLS=8,BB_ROWS=8
+const BB_COLORS=['#e74c3c','#2ecc71','#3498db','#f39c12','#9b59b6','#e67e22','#1abc9c']
+const BB_PIECES=[[[1,1,1]],[[1],[1],[1]],[[1,1],[1,1]],[[1,1,1],[0,1,0]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0],[1,0],[1,1]],[[0,1],[0,1],[1,1]],[[1,1,1,1]],[[1]],[[1,1]],[[1],[1]],[[1,1],[1,0]],[[1,0],[1,1]]]
+function randPiece(){return{shape:BB_PIECES[Math.floor(Math.random()*BB_PIECES.length)],color:BB_COLORS[Math.floor(Math.random()*BB_COLORS.length)]}}
+function BlockBlast(){
+  const [grid,setGrid]=useState(()=>Array(BB_ROWS).fill(null).map(()=>Array(BB_COLS).fill(null)))
+  const [pieces,setPieces]=useState([randPiece(),randPiece(),randPiece()])
+  const [score,setScore]=useState(0)
+  const [best,setBest]=useState(0)
+  const [exploding,setExploding]=useState(new Set())
+  const [dragging,setDragging]=useState(null)
+  const [hoverCell,setHoverCell]=useState(null)
+  const [lost,setLost]=useState(false)
+  const gridRef=useRef(null)
+  function canPlace(g,shape,row,col){return shape.every((r,ri)=>r.every((c,ci)=>!c||(row+ri>=0&&row+ri<BB_ROWS&&col+ci>=0&&col+ci<BB_COLS&&!g[row+ri][col+ci])))}
+  function place(g,shape,row,col,color){const ng=g.map(r=>[...r]);shape.forEach((r,ri)=>r.forEach((c,ci)=>{if(c)ng[row+ri][col+ci]=color}));return ng}
+  function clearLines(g){
+    const fullRows=g.map((r,i)=>r.every(c=>c)?i:-1).filter(i=>i>=0)
+    const fullCols=Array.from({length:BB_COLS},(_,ci)=>g.every(r=>r[ci])?ci:-1).filter(i=>i>=0)
+    const cells=new Set()
+    fullRows.forEach(ri=>Array.from({length:BB_COLS},(_,ci)=>cells.add(`${ri}-${ci}`)))
+    fullCols.forEach(ci=>Array.from({length:BB_ROWS},(_,ri)=>cells.add(`${ri}-${ci}`)))
+    if(!cells.size)return{ng:g,cleared:0,cells}
+    const ng=g.map(r=>[...r])
+    cells.forEach(k=>{const[r,c]=k.split('-').map(Number);ng[r][c]=null})
+    return{ng,cleared:fullRows.length+fullCols.length,cells}
+  }
+  function checkLost(g,ps){return ps.filter(Boolean).every(({shape})=>{for(let r=0;r<=BB_ROWS-shape.length;r++)for(let c=0;c<=BB_COLS-(shape[0]?.length||1);c++)if(canPlace(g,shape,r,c))return false;return true})}
+  function dropPiece(idx,row,col){
+    const p=pieces[idx];if(!p)return
+    if(!canPlace(grid,p.shape,row,col))return
+    let ng=place(grid,p.shape,row,col,p.color)
+    const{ng:cg,cleared,cells}=clearLines(ng)
+    const pts=cleared*100+p.shape.flat().filter(Boolean).length*10
+    const ns=score+pts;if(ns>best)setBest(ns);setScore(ns)
+    if(cells.size>0){setExploding(cells);setTimeout(()=>setExploding(new Set()),500)}
+    const np=[...pieces];np[idx]=null
+    const fp=np.every(x=>!x)?[randPiece(),randPiece(),randPiece()]:np
+    setGrid(cg);setPieces(fp)
+    if(checkLost(cg,fp))setLost(true)
+  }
+  function getCell(clientX,clientY){
+    if(!gridRef.current)return null
+    const rect=gridRef.current.getBoundingClientRect()
+    const cs=rect.width/BB_COLS
+    const col=Math.floor((clientX-rect.left)/cs),row=Math.floor((clientY-rect.top)/cs)
+    if(row<0||row>=BB_ROWS||col<0||col>=BB_COLS)return null
+    return{row,col}
+  }
+  function onDragStart(e,idx){setDragging(idx);e.preventDefault()}
+  function onDragMove(e){
+    if(dragging===null)return
+    const t=e.touches?e.touches[0]:e
+    setHoverCell(getCell(t.clientX,t.clientY));e.preventDefault()
+  }
+  function onDragEnd(e){
+    if(dragging===null)return
+    const t=e.changedTouches?e.changedTouches[0]:e
+    const cell=getCell(t.clientX,t.clientY)
+    if(cell)dropPiece(dragging,cell.row,cell.col)
+    setDragging(null);setHoverCell(null)
+  }
+  function reset(){setGrid(Array(BB_ROWS).fill(null).map(()=>Array(BB_COLS).fill(null)));setPieces([randPiece(),randPiece(),randPiece()]);setScore(0);setLost(false);setExploding(new Set())}
+  const CS=Math.min(40,Math.floor(320/BB_COLS))
+  return(
+    <div style={{textAlign:'center',userSelect:'none'}} onMouseMove={onDragMove} onTouchMove={onDragMove} onMouseUp={onDragEnd} onTouchEnd={onDragEnd}>
+      <div style={{display:'flex',justifyContent:'center',gap:28,marginBottom:12}}>
+        <div><div style={{fontSize:22,fontWeight:800,color:ORANGE}}>{score}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Score</div></div>
+        <div><div style={{fontSize:22,fontWeight:800,color:'#f39c12'}}>👑 {best}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Recorde</div></div>
+      </div>
+      <div ref={gridRef} style={{display:'inline-grid',gridTemplateColumns:`repeat(${BB_COLS},${CS}px)`,gap:2,background:'var(--t-border)',padding:3,borderRadius:14,border:'3px solid var(--t-border)',boxShadow:'0 8px 32px rgba(0,0,0,0.25)',marginBottom:16}}>
+        {grid.map((row,ri)=>row.map((cell,ci)=>{
+          const k=`${ri}-${ci}`
+          const isExploding=exploding.has(k)
+          const isHover=dragging!==null&&hoverCell&&pieces[dragging]&&canPlace(grid,pieces[dragging].shape,hoverCell.row,hoverCell.col)&&pieces[dragging].shape[ri-hoverCell.row]?.[ci-hoverCell.col]
+          return(<div key={k} style={{width:CS,height:CS,background:isExploding?'#fff':cell||(isHover?pieces[dragging].color+'99':null)||'var(--t-card)',borderRadius:6,boxShadow:cell?`inset 0 -3px 0 rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.3)`:'none',transition:'all 0.15s',transform:isExploding?'scale(1.3)':'scale(1)',opacity:isExploding?0:1}}/>)
+        }))}
+      </div>
+      <div style={{display:'flex',justifyContent:'center',gap:12,marginBottom:16,flexWrap:'wrap'}}>
+        {pieces.map((p,idx)=>p?(
+          <div key={idx} onMouseDown={e=>onDragStart(e,idx)} onTouchStart={e=>onDragStart(e,idx)}
+            style={{cursor:'grab',opacity:dragging===idx?0.4:1,padding:8,background:'var(--t-card)',borderRadius:12,border:`2px solid ${p.color}`,boxShadow:`0 4px 0 ${p.color}66`,touchAction:'none',transition:'opacity 0.2s'}}>
+            <div style={{display:'grid',gridTemplateColumns:`repeat(${p.shape[0].length},${CS*0.75}px)`,gap:2}}>
+              {p.shape.map((row,ri)=>row.map((c,ci)=>(
+                <div key={`${ri}-${ci}`} style={{width:CS*0.75,height:CS*0.75,background:c?p.color:'transparent',borderRadius:4,boxShadow:c?`inset 0 -2px 0 rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.3)`:'none'}}/>
+              )))}
+            </div>
+          </div>
+        ):<div key={idx} style={{width:56,height:56}}/>)}
+      </div>
+      {lost?(<div><p style={{fontSize:18,fontWeight:700,color:'#e74c3c',marginBottom:10}}>😢 Que Pena, Você Perdeu!</p><button onClick={reset} style={{padding:'10px 28px',background:ORANGE,color:'#fff',border:'none',borderRadius:12,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Jogar Novamente</button></div>)
+      :(<button onClick={reset} style={{padding:'8px 20px',background:'none',border:'1.5px solid var(--t-border)',borderRadius:10,fontSize:13,cursor:'pointer',fontFamily:'inherit',color:'var(--t-text)'}}>↺ Reiniciar</button>)}
+      <p style={{fontSize:11,color:'var(--t-muted)',marginTop:8}}>Arraste as peças para o tabuleiro · Complete linhas para pontuar</p>
     </div>
   )
 }
@@ -197,33 +342,34 @@ function TicTacToe() {
 // ── GAMES UI ──────────────────────────────────────────────────────
 function GamesUI() {
   const [activeGame, setActiveGame] = useState(null)
-
-  if (activeGame === 'tictactoe') {
+  const games = { tictactoe: <TicTacToe/>, memory: <MemoryGame/>, snake: <SnakeGame/>, blockblast: <BlockBlast/> }
+  const titles = { tictactoe:'⭕ Jogo da Velha', memory:'🃏 Jogo da Memória', snake:'🐍 Snake', blockblast:'🧱 Block Blast 3D' }
+  if (activeGame && games[activeGame]) {
     return (
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px 24px', overflowY: 'auto' }}>
-        <button onClick={() => setActiveGame(null)} style={{ alignSelf: 'flex-start', marginBottom: 20, padding: '8px 16px', background: 'none', border: '1.5px solid var(--t-border)', borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', fontSize: 14, color: 'var(--t-text)' }}>← Outros Jogos</button>
-        <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 28, color: 'var(--t-text)' }}>⭕ Jogo da Velha</h2>
-        <TicTacToe />
+      <div style={{flex:1,display:'flex',flexDirection:'column',overflowY:'auto'}}>
+        <div style={{padding:'12px 16px',borderBottom:'1px solid var(--t-border)',display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
+          <button onClick={()=>setActiveGame(null)} style={{background:'none',border:'1.5px solid var(--t-border)',borderRadius:10,cursor:'pointer',fontFamily:'inherit',fontSize:13,color:'var(--t-text)',padding:'6px 14px'}}>← Jogos</button>
+          <h2 style={{fontSize:18,fontWeight:800,margin:0,color:'var(--t-text)'}}>{titles[activeGame]}</h2>
+        </div>
+        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'20px 16px',overflowY:'auto'}}>
+          {games[activeGame]}
+        </div>
       </div>
     )
   }
-
   return (
-    <div style={{ flex: 1, padding: '20px 16px', overflowY: 'auto' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 14, maxWidth: 840, margin: '0 auto' }}>
-        {GAMES_LIST.map(game => (
-          <button key={game.id} onClick={() => game.active && setActiveGame(game.id)}
-            style={{ padding: 20, border: `2px solid ${game.active ? ORANGE : 'var(--t-border)'}`, borderRadius: 18, background: 'var(--t-card)', cursor: game.active ? 'pointer' : 'default', textAlign: 'left', fontFamily: 'inherit', opacity: game.active ? 1 : 0.65, transition: 'all 0.2s' }}
-            onMouseEnter={e => { if (game.active) { e.currentTarget.style.background = 'var(--t-card-hover)'; e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' } }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'var(--t-card)'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none' }}
+    <div style={{flex:1,padding:'20px 16px',overflowY:'auto'}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax(175px, 1fr))',gap:14,maxWidth:840,margin:'0 auto'}}>
+        {GAMES_LIST.map(game=>(
+          <button key={game.id} onClick={()=>game.active&&setActiveGame(game.id)}
+            style={{padding:20,border:`2px solid ${game.active?ORANGE:'var(--t-border)'}`,borderRadius:18,background:'var(--t-card)',cursor:game.active?'pointer':'default',textAlign:'left',fontFamily:'inherit',opacity:game.active?1:0.55,transition:'all 0.2s'}}
+            onMouseEnter={e=>{if(game.active){e.currentTarget.style.background='var(--t-card-hover)';e.currentTarget.style.transform='translateY(-3px)';e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'}}}
+            onMouseLeave={e=>{e.currentTarget.style.background='var(--t-card)';e.currentTarget.style.transform='none';e.currentTarget.style.boxShadow='none'}}
           >
-            <div style={{ fontSize: 38, marginBottom: 10 }}>{game.icon}</div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--t-text)', marginBottom: 6 }}>{game.name}</div>
-            <div style={{ fontSize: 12, color: 'var(--t-muted)', lineHeight: 1.4, marginBottom: 10 }}>{game.desc}</div>
-            {game.active
-              ? <span style={{ fontSize: 12, color: ORANGE, fontWeight: 700 }}>▶ Jogar agora</span>
-              : <span style={{ fontSize: 11, color: 'var(--t-muted)', fontStyle: 'italic' }}>Em breve</span>
-            }
+            <div style={{fontSize:38,marginBottom:10}}>{game.icon}</div>
+            <div style={{fontSize:15,fontWeight:700,color:'var(--t-text)',marginBottom:6}}>{game.name}</div>
+            <div style={{fontSize:12,color:'var(--t-muted)',lineHeight:1.4,marginBottom:10}}>{game.desc}</div>
+            {game.active?<span style={{fontSize:12,color:ORANGE,fontWeight:700}}>▶ Jogar agora</span>:<span style={{fontSize:11,color:'var(--t-muted)',fontStyle:'italic'}}>Em breve</span>}
           </button>
         ))}
       </div>
@@ -232,7 +378,7 @@ function GamesUI() {
 }
 
 // ── TRADUTOR UI ───────────────────────────────────────────────────
-function TradutorUI({ user }) {
+// function TradutorUI({ user }) {
   const [fromLang, setFromLang] = useState('pt')
   const [toLang, setToLang] = useState('en')
   const [inputText, setInputText] = useState('')
