@@ -1299,10 +1299,13 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
           .replace(/---\s*$/m, '')
           .trim()
         const preview = full.split('[DOC]')[0].replace(/```markdown|```/g,'').trim().slice(0, 300)
+        const tl = text.toLowerCase()
+        const docFormat = tl.includes('word') || tl.includes('docx') ? 'docx' : tl.includes('planilha') || tl.includes('excel') || tl.includes('xlsx') ? 'xlsx' : 'pdf'
         setMessages(prev => prev.map(m => m.id === assistantId ? {
           ...m,
           content: preview || '📄 Documento gerado com sucesso!',
           docContent,
+          docFormat,
           streaming: false,
         } : m))
       } else {
@@ -1351,10 +1354,10 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
     const assistantId = `a-${Date.now()}`
     setMessages(prev => [...prev, userMsg, { id: assistantId, role: 'assistant', content: 'Gerando documento...', streaming: true }])
     try {
+      const fmt = prompt.toLowerCase().includes('word') || prompt.toLowerCase().includes('docx') ? 'docx' : prompt.toLowerCase().includes('planilha') || prompt.toLowerCase().includes('excel') || prompt.toLowerCase().includes('xlsx') ? 'xlsx' : 'pdf'
       const res = await fetch('/api/document/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        const fmt = prompt.toLowerCase().includes('word') || prompt.toLowerCase().includes('docx') ? 'docx' : prompt.toLowerCase().includes('planilha') || prompt.toLowerCase().includes('excel') || prompt.toLowerCase().includes('xlsx') ? 'xlsx' : 'pdf'
         body: JSON.stringify({ prompt, userId: user.id, userPlan: user.plan, language: settings.language, format: fmt }),
       })
       if (res.status === 429) {
