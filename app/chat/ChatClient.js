@@ -1184,6 +1184,90 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
     setIsStreaming(false)
   }, [isStreaming, user, userMemory, settings.language])
 
+  // ── Generate PDF ───────────────────────────────────────────────
+  const handleGeneratePDF = useCallback(async (prompt) => {
+    if (isStreaming) return
+    setIsStreaming(true)
+    let convId = activeConvIdRef.current
+    if (!convId) {
+      const title = `PDF: ${prompt.slice(0, 40)}`
+      const res = await fetch('/api/conversation/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, title }),
+      })
+      const newConv = res?.ok ? await res.json() : null
+      if (newConv?.id) {
+        convId = newConv.id
+        setActiveConvId(convId)
+        activeConvIdRef.current = convId
+        setConversations(prev => [newConv, ...prev])
+        setView('conversation')
+      }
+    }
+    const userMsg = { id: `u-${Date.now()}`, role: 'user', content: `📄 Gerar PDF: ${prompt}` }
+    const assistantId = `a-${Date.now()}`
+    setMessages(prev => [...prev, userMsg, { id: assistantId, role: 'assistant', content: 'Gerando documento...', streaming: true }])
+    try {
+      const res = await fetch('/api/document/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, userId: user.id, userPlan: user.plan, language: settings.language, format: 'pdf' }),
+      })
+      if (res.status === 429) {
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Limite de geração de documentos atingido. Faça upgrade para continuar.', streaming: false } : m))
+      } else {
+        const data = await res.json()
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: '📄 Documento gerado! Clique abaixo para baixar.', docContent: data.content, streaming: false } : m))
+      }
+    } catch {
+      setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao gerar documento.', streaming: false } : m))
+    }
+    setIsStreaming(false)
+  }, [isStreaming, user, settings.language])
+
+  // ── Generate PDF ───────────────────────────────────────────────
+  const handleGeneratePDF = useCallback(async (prompt) => {
+    if (isStreaming) return
+    setIsStreaming(true)
+    let convId = activeConvIdRef.current
+    if (!convId) {
+      const title = `PDF: ${prompt.slice(0, 40)}`
+      const res = await fetch('/api/conversation/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, title }),
+      })
+      const newConv = res?.ok ? await res.json() : null
+      if (newConv?.id) {
+        convId = newConv.id
+        setActiveConvId(convId)
+        activeConvIdRef.current = convId
+        setConversations(prev => [newConv, ...prev])
+        setView('conversation')
+      }
+    }
+    const userMsg = { id: `u-${Date.now()}`, role: 'user', content: `📄 Gerar PDF: ${prompt}` }
+    const assistantId = `a-${Date.now()}`
+    setMessages(prev => [...prev, userMsg, { id: assistantId, role: 'assistant', content: 'Gerando documento...', streaming: true }])
+    try {
+      const res = await fetch('/api/document/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, userId: user.id, userPlan: user.plan, language: settings.language, format: 'pdf' }),
+      })
+      if (res.status === 429) {
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Limite de geração de documentos atingido. Faça upgrade para continuar.', streaming: false } : m))
+      } else {
+        const data = await res.json()
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: '📄 Documento gerado! Clique abaixo para baixar.', docContent: data.content, streaming: false } : m))
+      }
+    } catch {
+      setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao gerar documento.', streaming: false } : m))
+    }
+    setIsStreaming(false)
+  }, [isStreaming, user, settings.language])
+
   // ── File upload / document analysis ───────────────────────────
   const handleFileSelect = useCallback(async (file) => {
     if (isStreaming) return
