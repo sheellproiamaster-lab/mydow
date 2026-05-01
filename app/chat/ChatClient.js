@@ -26,7 +26,7 @@ const TRANSLATIONS = {
     logout: 'Sign out', noConvs: 'No conversations yet', save: 'Save', saved: '✓ Saved!',
     saving: 'Saving...', accept: 'Accept and Continue', accepting: 'Saving...',
     whatExecute: 'What shall we execute today?',
-    suggestions: ['Help me organize my routine', 'I want to create a strategic plan', 'I want to learn something new today', 'Help me analyze a complex problem'],
+    suggestions: ['Me ajude a organizar minha rotina', 'Quero criar um plano estratégico', 'Quero aprender algo novo hoje', 'Me ajude a analisar um problema complexo'],
   },
   es: {
     newConv: 'Nueva Conversación', send: 'Enviar', hello: 'Hola', typeMsg: 'Escribe tu mensaje...',
@@ -963,7 +963,7 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
   // FIX BUG 7: Load settings from user.preferences jsonb
   const [settings, setSettings] = useState({
     theme: user.preferences?.theme || 'light',
-    language: user.preferences?.language || 'pt',
+    language: 'pt',
     fontSize: user.preferences?.fontSize || 'normal',
   })
 
