@@ -46,6 +46,9 @@ function TermsModal({ onClose }) {
               <p style={{ margin: 0 }}>{d}</p>
             </div>
           ))}
+          <div style={{ marginTop: 20, padding: '14px 20px', background: 'rgba(232,122,47,0.08)', border: '1.5px solid rgba(232,122,47,0.3)', borderRadius: 12, textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#C96520' }}>Ao usar o Mydow você aceita nossos Termos de Uso</p>
+          </div>
         </div>
       </div>
     </div>
@@ -78,6 +81,9 @@ function PrivacyModal({ onClose }) {
               <p style={{ margin: 0 }}>{d}</p>
             </div>
           ))}
+          <div style={{ marginTop: 20, padding: '14px 20px', background: 'rgba(232,122,47,0.08)', border: '1.5px solid rgba(232,122,47,0.3)', borderRadius: 12, textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#C96520' }}>Ao usar o Mydow você aceita nossa Política de Privacidade</p>
+          </div>
         </div>
       </div>
     </div>
@@ -207,7 +213,7 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  function handleComeclar() {
+  function handleComecar() {
     setBtnClicked(true);
     setTimeout(() => { setBtnClicked(false); setShowModal(true); }, 400);
   }
@@ -234,38 +240,24 @@ export default function Home() {
             <h1 style={{ fontSize: 'clamp(42px, 4.8vw, 70px)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, background: 'linear-gradient(135deg, #E87A2F 0%, #D4AF37 50%, #C96520 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', margin: 0 }}>Mydow</h1>
             <p style={{ fontSize: 'clamp(13px, 1.3vw, 17px)', fontWeight: 800, color: '#222', margin: 0, textAlign: 'center', maxWidth: '320px', lineHeight: 1.4, letterSpacing: '-0.01em' }}>Seu Agente que executa tarefas de alto nível</p>
 
-            <button
-              className="btn-luxury"
-              onClick={handleComeclar}
-              style={{
-                padding: '14px 44px',
-                borderRadius: '50px',
-                border: 'none',
-                color: 'white',
-                fontSize: '15px',
-                fontWeight: 700,
-                cursor: 'pointer',
-                letterSpacing: '0.06em',
-                fontFamily: 'inherit',
-                transform: btnClicked ? 'scale(0.95)' : 'scale(1)',
-                transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
-              }}
-            >
+            <button className="btn-luxury" onClick={handleComecar} style={{ padding: '14px 44px', borderRadius: '50px', border: 'none', color: 'white', fontSize: '15px', fontWeight: 700, cursor: 'pointer', letterSpacing: '0.06em', fontFamily: 'inherit', transform: btnClicked ? 'scale(0.95)' : 'scale(1)', transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' }}>
               ✦ Começar
             </button>
 
-            <div style={{ display: 'flex', gap: 16, marginTop: 4 }}>
-              <p style={{ fontSize: 12, color: '#C96520', textAlign: 'center', maxWidth: 320, lineHeight: 1.6, margin: 0 }}>
+             <div style={{ padding: '12px 20px', background: 'rgba(255,255,255,0.7)', border: '1.5px solid rgba(232,122,47,0.25)', borderRadius: 14, textAlign: 'center', maxWidth: 320 }}>
 
-  Ao acessar e Utilizar os Serviços do Mydow Você Concorda e Aceita os Nossos{' '}
+              <p style={{ fontSize: 12, color: '#888', lineHeight: 1.6, margin: 0 }}>
 
-  <button onClick={() => setShowTerms(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: '#C96520', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, textDecoration: 'underline', padding: 0 }}>Termos de Uso</button>
+                Ao Acessar e Utilizar os Serviços do Mydow Você Concorda e Aceita os Nossos{' '}
 
-  {' '}e a Nossa{' '}
+                <button onClick={() => setShowTerms(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: '#E87A2F', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, textDecoration: 'underline', padding: 0 }}>Termos de Uso</button>
 
-  <button onClick={() => setShowPrivacy(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: '#C96520', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, textDecoration: 'underline', padding: 0 }}>Política de Privacidade</button>
+                {' '}e a Nossa{' '}
 
-</p>
+                <button onClick={() => setShowPrivacy(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: '#E87A2F', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, textDecoration: 'underline', padding: 0 }}>Política de Privacidade</button>
+
+              </p>
+
             </div>
 
             <div className="fw-inline">
@@ -315,12 +307,7 @@ export default function Home() {
         @keyframes progressBar { from { width: 0%; } to { width: 100%; } }
         @keyframes scaleIn { from { opacity:0; transform: translate(-50%,-50%) scale(0.92); } to { opacity:1; transform: translate(-50%,-50%) scale(1); } }
         @keyframes luxuryPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0.4), 0 8px 32px rgba(232,122,47,0.35); } 50% { box-shadow: 0 0 0 8px rgba(212,175,55,0), 0 12px 40px rgba(232,122,47,0.5); } }
-        .btn-luxury {
-          background: linear-gradient(135deg, #C96520 0%, #E87A2F 30%, #D4AF37 60%, #E87A2F 80%, #C96520 100%);
-          background-size: 200% auto;
-          animation: luxuryShine 3s linear infinite, luxuryPulse 2.5s ease-in-out infinite;
-          box-shadow: 0 8px 32px rgba(232,122,47,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
-        }
+        .btn-luxury { background: linear-gradient(135deg, #C96520 0%, #E87A2F 30%, #D4AF37 60%, #E87A2F 80%, #C96520 100%); background-size: 200% auto; animation: luxuryShine 3s linear infinite, luxuryPulse 2.5s ease-in-out infinite; box-shadow: 0 8px 32px rgba(232,122,47,0.35), inset 0 1px 0 rgba(255,255,255,0.2); }
         .btn-luxury:hover { background-position: right center; transform: translateY(-3px) scale(1.04) !important; box-shadow: 0 14px 44px rgba(212,175,55,0.5), inset 0 1px 0 rgba(255,255,255,0.3); }
         @keyframes luxuryShine { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
         .float-agent { animation: floatAgent 6s ease-in-out infinite; }
