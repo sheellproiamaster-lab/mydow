@@ -122,6 +122,9 @@ function TermsModal({ onClose }) {
           {[['1. Aceitação dos Termos','Ao acessar e utilizar o Mydow, você concorda com os presentes Termos de Uso. O Mydow é uma plataforma desenvolvida e operada pela Michel Macedo Holding.'],['2. Descrição do Serviço','O Mydow é um agente executor desenvolvido para realizar tarefas de alto nível, auxiliar na tomada de decisões estratégicas e apoiar os usuários em suas demandas pessoais e profissionais.'],['3. Elegibilidade e Cadastro','Para utilizar o Mydow, o usuário deve ter 18 anos ou mais e fornecer informações verídicas no momento do cadastro.'],['4. Uso Adequado da Plataforma','O usuário compromete-se a utilizar o Mydow de forma ética e legal. É vedado o uso para fins ilícitos, difamatórios ou que causem danos a terceiros.'],['5. Responsabilidades do Usuário','O usuário é responsável por todas as interações em sua conta e pela segurança de suas credenciais. A Michel Macedo Holding não se responsabiliza por decisões tomadas com base nas respostas do Mydow.'],['6. Propriedade Intelectual','Toda a propriedade intelectual relacionada ao Mydow pertence à Michel Macedo Holding. É proibida a reprodução ou comercialização sem autorização expressa.'],['7. Disposições Gerais','Estes Termos podem ser alterados a qualquer momento. O foro competente é o da comarca de domicílio da Michel Macedo Holding.']].map(([t,d]) => (
             <div key={t} style={{ marginBottom: 16 }}><strong style={{ color: 'var(--t-text)', display: 'block', marginBottom: 4 }}>{t}</strong><p style={{ margin: 0 }}>{d}</p></div>
           ))}
+        <div style={{ marginTop: 20, padding: '14px 20px', background: 'rgba(232,122,47,0.08)', border: '1.5px solid rgba(232,122,47,0.3)', borderRadius: 12, textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#C96520' }}>Você Acessou o Mydow e Aceitou Nossos Termos de Uso</p>
+          </div>
         </div>
       </div>
     </div>
@@ -140,6 +143,9 @@ function PrivacyModal({ onClose }) {
           {[['1. Informações Coletadas','Coletamos nome, e-mail, dados de interação e informações de pagamento, tratados conforme a LGPD (Lei 13.709/2018).'],['2. Uso das Informações','Usamos as informações para fornecer e melhorar o serviço, personalizar a experiência e garantir a segurança da plataforma.'],['3. Armazenamento e Segurança','Dados armazenados em servidores seguros com criptografia. Adotamos medidas técnicas contra acesso não autorizado.'],['4. Compartilhamento de Informações','Não vendemos dados. Compartilhamento apenas para prestação do serviço ou por obrigação legal.'],['5. Direitos do Usuário','Você pode acessar, corrigir, exportar ou solicitar exclusão de seus dados pelo suporte oficial.'],['6. Retenção de Dados','Dados mantidos enquanto a conta estiver ativa. Após exclusão, removidos conforme a legislação.'],['7. Cookies','Usamos cookies para autenticar usuários e garantir o funcionamento da plataforma.'],['8. Alterações na Política','Alterações significativas serão comunicadas. O uso continuado implica aceitação da nova política.'],['9. Contato','Para dúvidas sobre privacidade, entre em contato pelo suporte oficial do Mydow.'],['10. Legislação Aplicável','Regida pela LGPD (Lei 13.709/2018) e demais legislações brasileiras aplicáveis.']].map(([t,d]) => (
             <div key={t} style={{ marginBottom: 16 }}><strong style={{ color: 'var(--t-text)', display: 'block', marginBottom: 4 }}>{t}</strong><p style={{ margin: 0 }}>{d}</p></div>
           ))}
+        <div style={{ marginTop: 20, padding: '14px 20px', background: 'rgba(232,122,47,0.08)', border: '1.5px solid rgba(232,122,47,0.3)', borderRadius: 12, textAlign: 'center' }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#C96520' }}>Você Acessou o Mydow e Aceitou Nossa Política de Privacidade</p>
+          </div>
         </div>
       </div>
     </div>
@@ -493,7 +499,6 @@ function SettingsModal({ user, onClose, settings, onUpdateSettings, onDeleteAcco
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[
               { id: 'appearance', label: '🌓 Aparência', desc: settings.theme === 'dark' ? 'Modo escuro' : 'Modo claro' },
-              { id: 'font', label: '🔤 Fonte', desc: settings.fontSize === 'small' ? 'Pequena' : settings.fontSize === 'large' ? 'Grande' : 'Normal' },
               { id: 'lgpd', label: '📋 LGPD', desc: 'Termos e privacidade' },
               { id: 'delete', label: '🗑 Excluir Conta', desc: 'Remover todos os dados', danger: true },
             ].map(item => (
@@ -576,10 +581,6 @@ function SettingsModal({ user, onClose, settings, onUpdateSettings, onDeleteAcco
               {user.accepted_at ? new Date(user.accepted_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Data não registrada'}
             </p>
             <LGPDLinks />
-            <div style={{ marginTop: 16, padding: '12px 16px', background: 'rgba(232,122,47,0.08)', border: '1.5px solid rgba(232,122,47,0.3)', borderRadius: 12, textAlign: 'center' }}>
-              <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 700, color: '#C96520' }}>Você Acessou o Mydow e Aceitou Nossos Termos de Uso</p>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#C96520' }}>Você Acessou o Mydow e Aceitou Nossa Política de Privacidade</p>
-            </div>
           </div>
         </div>
       )}
