@@ -991,6 +991,25 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
   useEffect(() => { activeConvIdRef.current = activeConvId }, [activeConvId])
   useEffect(() => { messagesRef.current = messages }, [messages])
 
+  // Auto-refresh: atualiza contador e conversas a cada 30 segundos
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/user/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data.msgCount) setMsgCount(data.msgCount)
+          if (data.conversations) setConversations(data.conversations)
+        }
+      } catch {}
+    }, 30000)
+    return () => clearInterval(interval)
+  }, [user.id])
+
   // BUG 1 FIX: Only show LGPD when explicitly false (not just falsy null)
   const [lgpdOpen, setLgpdOpen] = useState(false)
 
