@@ -864,7 +864,7 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
         )}
         <textarea ref={textareaRef} value={value} onChange={handleInput} onKeyDown={handleKeyDown} disabled={disabled} placeholder={disabled ? 'Limite atingido' : placeholder} rows={1}
           style={{ flex: 1, border: 'none', outline: 'none', resize: 'none', fontSize: 14, fontFamily: 'inherit', color: 'var(--t-text)', background: 'transparent', lineHeight: 1.5, maxHeight: 120, overflow: 'hidden' }} />
-        <button onClick={handleSend} disabled={disabled || !value.trim()}
+        <button onClick={handleSend} disabled={disabled || (!value.trim() && !pendingFile)}
           style={{ padding: '7px 14px', background: disabled || !value.trim() ? 'var(--t-border)' : ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: disabled || !value.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit', flexShrink: 0, transition: 'background 0.2s' }}>
           {placeholder?.includes('Enviar') ? 'Enviar' : 'Enviar'}
         </button>
