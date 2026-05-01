@@ -130,7 +130,7 @@ function TicTacToe() {
 }
 
 // ── MEMORY GAME ───────────────────────────────────────────────────
-const MEMORY_EMOJIS=['🌟','🎯','🚀','🌈','🎮','💎','🔥','🌺','🦋','🎸','🍀','🎭','🐉','🦄','🌙','🎪','🍕','🎵']
+const MEMORY_EMOJIS=['🌟','🎯','🚀','🌈','🎮','💎','🔥','🌺','🦋','🎸','🍀','🎭','🐉','🦄','🌙']
 function MemoryGame() {
   const [cards,setCards]=useState([])
   const [flipped,setFlipped]=useState([])
@@ -244,7 +244,7 @@ function SnakeGame() {
 }
 
 // ── BLOCK BLAST 3D ────────────────────────────────────────────────
-const BB_COLS=8,BB_ROWS=8
+const BB_COLS=7,BB_ROWS=7
 const BB_COLORS=['#e74c3c','#2ecc71','#3498db','#f39c12','#9b59b6','#e67e22','#1abc9c']
 const BB_PIECES=[[[1,1,1]],[[1],[1],[1]],[[1,1],[1,1]],[[1,1,1],[0,1,0]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0],[1,0],[1,1]],[[0,1],[0,1],[1,1]],[[1,1,1,1]],[[1]],[[1,1]],[[1],[1]],[[1,1],[1,0]],[[1,0],[1,1]]]
 function randPiece(){return{shape:BB_PIECES[Math.floor(Math.random()*BB_PIECES.length)],color:BB_COLORS[Math.floor(Math.random()*BB_COLORS.length)]}}
@@ -307,7 +307,7 @@ function BlockBlast(){
     setDragging(null);setHoverCell(null)
   }
   function reset(){setGrid(Array(BB_ROWS).fill(null).map(()=>Array(BB_COLS).fill(null)));setPieces([randPiece(),randPiece(),randPiece()]);setScore(0);setLost(false);setExploding(new Set())}
-  const CS=typeof window!=='undefined'?Math.min(52,Math.floor((Math.min(window.innerWidth-48,520))/BB_COLS)):40
+  const CS=typeof window!=='undefined'?Math.min(58,Math.floor((Math.min(window.innerWidth-48,500))/BB_COLS)):44
   return(
     <div style={{textAlign:'center',userSelect:'none'}} onMouseMove={onDragMove} onTouchMove={onDragMove} onMouseUp={onDragEnd} onTouchEnd={onDragEnd}>
       <div style={{display:'flex',justifyContent:'center',gap:28,marginBottom:12}}>
