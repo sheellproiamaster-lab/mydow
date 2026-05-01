@@ -933,13 +933,12 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
             )
             return null
           })}
-          {msg.docContent && (
-            <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-              <button onClick={() => handleDownloadDoc(msg.docContent, 'pdf')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇ PDF</button>
-              <button onClick={() => handleDownloadDoc(msg.docContent, 'docx')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', background: '#2b5797', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇ Word</button>
-              <button onClick={() => handleDownloadDoc(msg.docContent, 'xlsx')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', background: '#1e7145', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇ Excel</button>
-            </div>
-          )}
+          {msg.docContent && (() => {
+            const fmt = msg.docFormat || 'pdf'
+            const btnColor = fmt === 'docx' ? '#2b5797' : fmt === 'xlsx' ? '#1e7145' : ORANGE
+            const btnLabel = fmt === 'docx' ? '⬇ Baixar Word' : fmt === 'xlsx' ? '⬇ Baixar Excel' : '⬇ Baixar PDF'
+            return <button onClick={() => handleDownloadDoc(msg.docContent, fmt)} style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 12, padding: '8px 14px', background: btnColor, color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>{btnLabel}</button>
+          })()}
         </div>
         {!isUser && !msg.streaming && (
           <div style={{ display: 'flex', gap: 4, marginTop: 6, paddingLeft: 4 }}>
@@ -1355,13 +1354,14 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
       const res = await fetch('/api/document/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, userId: user.id, userPlan: user.plan, language: settings.language, format: 'pdf' }),
+        const fmt = prompt.toLowerCase().includes('word') || prompt.toLowerCase().includes('docx') ? 'docx' : prompt.toLowerCase().includes('planilha') || prompt.toLowerCase().includes('excel') || prompt.toLowerCase().includes('xlsx') ? 'xlsx' : 'pdf'
+        body: JSON.stringify({ prompt, userId: user.id, userPlan: user.plan, language: settings.language, format: fmt }),
       })
       if (res.status === 429) {
         setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Limite de geração de documentos atingido. Faça upgrade para continuar.', streaming: false } : m))
       } else {
         const data = await res.json()
-        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: '📄 Documento gerado! Clique abaixo para baixar.', docContent: data.content, streaming: false } : m))
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: '📄 Documento gerado! Clique abaixo para baixar.', docContent: data.content, docFormat: data.format || 'pdf', streaming: false } : m))
       }
     } catch {
       setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao gerar documento.', streaming: false } : m))
