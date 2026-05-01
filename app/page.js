@@ -255,9 +255,17 @@ export default function Home() {
             </button>
 
             <div style={{ display: 'flex', gap: 16, marginTop: 4 }}>
-              <button onClick={() => setShowTerms(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: '#C96520', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, textDecoration: 'underline', opacity: 0.8 }}>Termos de Uso</button>
-              <span style={{ fontSize: 12, color: '#C96520', opacity: 0.5 }}>·</span>
-              <button onClick={() => setShowPrivacy(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: '#C96520', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, textDecoration: 'underline', opacity: 0.8 }}>Política de Privacidade</button>
+              <p style={{ fontSize: 12, color: '#C96520', textAlign: 'center', maxWidth: 320, lineHeight: 1.6, margin: 0 }}>
+
+  Ao acessar e Utilizar os Serviços do Mydow Você Concorda e Aceita os Nossos{' '}
+
+  <button onClick={() => setShowTerms(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: '#C96520', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, textDecoration: 'underline', padding: 0 }}>Termos de Uso</button>
+
+  {' '}e a Nossa{' '}
+
+  <button onClick={() => setShowPrivacy(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: '#C96520', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, textDecoration: 'underline', padding: 0 }}>Política de Privacidade</button>
+
+</p>
             </div>
 
             <div className="fw-inline">
