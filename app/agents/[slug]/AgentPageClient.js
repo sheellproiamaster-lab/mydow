@@ -60,8 +60,8 @@ const GAMES_LIST = [
   { id: 'memory', name: 'Jogo da Memória', icon: '🃏', desc: 'Encontre os pares', active: true },
   { id: 'snake', name: 'Snake', icon: '🐍', desc: 'Clássico jogo da cobrinha', active: true },
   { id: 'blockblast', name: 'Block Blast 3D', icon: '🧱', desc: 'Quebre blocos em 3D', active: true },
-  { id: 'chess', name: 'Xadrez', icon: '♟️', desc: 'Desafie a IA no xadrez', active: false },
-  { id: 'strategic', name: 'Jogo Estratégico Mydow', icon: '🎯', desc: 'Estratégia exclusiva Mydow', active: false },
+  { id: 'chess', name: 'Xadrez', icon: '♟️', desc: 'Desafie a IA no xadrez', active: true },
+  { id: 'strategic', name: 'Jogo Estratégico Mydow', icon: '🎯', desc: 'Conquiste o território', active: true },
 ]
 
 function applyTheme(isDark) {
@@ -130,7 +130,7 @@ function TicTacToe() {
 }
 
 // ── MEMORY GAME ───────────────────────────────────────────────────
-const MEMORY_EMOJIS=['🌟','🎯','🚀','🌈','🎮','💎','🔥','🌺','🦋','🎸','🍀','🎭']
+const MEMORY_EMOJIS=['🌟','🎯','🚀','🌈','🎮','💎','🔥','🌺','🦋','🎸','🍀','🎭','🐉','🦄','🌙','🎪','🍕','🎵']
 function MemoryGame() {
   const [cards,setCards]=useState([])
   const [flipped,setFlipped]=useState([])
@@ -153,28 +153,30 @@ function MemoryGame() {
       }else{setTimeout(()=>{setFlipped([]);setBlocking(false)},900)}
     }
   }
+  const COLS=6
   return(
-    <div style={{textAlign:'center',padding:'0 8px'}}>
-      <div style={{display:'flex',justifyContent:'center',gap:24,marginBottom:16}}>
-        <div><div style={{fontSize:20,fontWeight:800,color:ORANGE}}>{moves}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Jogadas</div></div>
-        <div><div style={{fontSize:20,fontWeight:800,color:'#f39c12'}}>👑 {best||'—'}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Recorde</div></div>
-        <div><div style={{fontSize:20,fontWeight:800,color:'#2ecc71'}}>{matched.length}/{MEMORY_EMOJIS.length}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Pares</div></div>
+    <div style={{textAlign:'center',width:'100%',maxWidth:600,margin:'0 auto',padding:'0 12px'}}>
+      <div style={{display:'flex',justifyContent:'center',gap:32,marginBottom:20}}>
+        <div><div style={{fontSize:24,fontWeight:800,color:ORANGE}}>{moves}</div><div style={{fontSize:12,color:'var(--t-muted)'}}>Jogadas</div></div>
+        <div><div style={{fontSize:24,fontWeight:800,color:'#f39c12'}}>👑 {best||'—'}</div><div style={{fontSize:12,color:'var(--t-muted)'}}>Recorde</div></div>
+        <div><div style={{fontSize:24,fontWeight:800,color:'#2ecc71'}}>{matched.length}/{MEMORY_EMOJIS.length}</div><div style={{fontSize:12,color:'var(--t-muted)'}}>Pares</div></div>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:6,maxWidth:380,margin:'0 auto 16px'}}>
+      <div style={{display:'grid',gridTemplateColumns:`repeat(${COLS},1fr)`,gap:8,marginBottom:20}}>
         {cards.map((card,i)=>{
           const isFlipped=flipped.includes(i)||matched.includes(card.emoji)
+          const isMatched=matched.includes(card.emoji)
           return(
-            <div key={card.key} onClick={()=>flip(i)} style={{aspectRatio:'1',cursor:'pointer',perspective:500}}>
-              <div style={{width:'100%',height:'100%',position:'relative',transformStyle:'preserve-3d',transform:isFlipped?'rotateY(180deg)':'rotateY(0)',transition:'transform 0.4s'}}>
-                <div style={{position:'absolute',inset:0,background:matched.includes(card.emoji)?'#2ecc7133':'var(--t-card)',border:`2px solid ${matched.includes(card.emoji)?'#2ecc71':ORANGE}`,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,backfaceVisibility:'hidden',transform:'rotateY(180deg)',boxShadow:'0 3px 0 rgba(0,0,0,0.15)'}}>{card.emoji}</div>
-                <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,#667eea,#764ba2)',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,backfaceVisibility:'hidden',boxShadow:'0 3px 0 rgba(0,0,0,0.2)'}}>❓</div>
+            <div key={card.key} onClick={()=>flip(i)} style={{aspectRatio:'1',cursor:'pointer',perspective:600}}>
+              <div style={{width:'100%',height:'100%',position:'relative',transformStyle:'preserve-3d',transform:isFlipped?'rotateY(180deg)':'rotateY(0)',transition:'transform 0.45s cubic-bezier(0.4,0,0.2,1)'}}>
+                <div style={{position:'absolute',inset:0,background:isMatched?'linear-gradient(135deg,#2ecc71,#27ae60)':'linear-gradient(135deg,#667eea,#764ba2)',border:`3px solid ${isMatched?'#2ecc71':'#764ba2'}`,borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,backfaceVisibility:'hidden',transform:'rotateY(180deg)',boxShadow:isMatched?'0 4px 0 rgba(0,0,0,0.2),0 0 12px #2ecc7155':'0 4px 0 rgba(0,0,0,0.2)'}}>{card.emoji}</div>
+                <div style={{position:'absolute',inset:0,background:'linear-gradient(135deg,#4a5568,#2d3748)',border:'3px solid #4a5568',borderRadius:14,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,backfaceVisibility:'hidden',boxShadow:'0 4px 0 rgba(0,0,0,0.25)',color:'#a0aec0'}}>?</div>
               </div>
             </div>
           )
         })}
       </div>
-      {won?(<div><p style={{fontSize:18,fontWeight:700,color:'#2ecc71',marginBottom:12}}>🎉 Parabéns! {moves} jogadas!</p><button onClick={init} style={{padding:'10px 28px',background:ORANGE,color:'#fff',border:'none',borderRadius:12,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Jogar Novamente</button></div>)
-      :(<button onClick={init} style={{padding:'8px 20px',background:'none',border:'1.5px solid var(--t-border)',borderRadius:10,fontSize:13,cursor:'pointer',fontFamily:'inherit',color:'var(--t-text)'}}>↺ Reiniciar</button>)}
+      {won?(<div><p style={{fontSize:20,fontWeight:800,color:'#2ecc71',marginBottom:14}}>🎉 Parabéns! {moves} jogadas!</p><button onClick={init} style={{padding:'12px 32px',background:ORANGE,color:'#fff',border:'none',borderRadius:14,fontSize:15,fontWeight:700,cursor:'pointer',fontFamily:'inherit',boxShadow:'0 4px 0 rgba(0,0,0,0.2)'}}>Jogar Novamente</button></div>)
+      :(<button onClick={init} style={{padding:'9px 22px',background:'none',border:'2px solid var(--t-border)',borderRadius:12,fontSize:13,cursor:'pointer',fontFamily:'inherit',color:'var(--t-text)',fontWeight:600}}>↺ Reiniciar</button>)}
     </div>
   )
 }
@@ -305,7 +307,7 @@ function BlockBlast(){
     setDragging(null);setHoverCell(null)
   }
   function reset(){setGrid(Array(BB_ROWS).fill(null).map(()=>Array(BB_COLS).fill(null)));setPieces([randPiece(),randPiece(),randPiece()]);setScore(0);setLost(false);setExploding(new Set())}
-  const CS=Math.min(40,Math.floor(320/BB_COLS))
+  const CS=typeof window!=='undefined'?Math.min(52,Math.floor((Math.min(window.innerWidth-48,520))/BB_COLS)):40
   return(
     <div style={{textAlign:'center',userSelect:'none'}} onMouseMove={onDragMove} onTouchMove={onDragMove} onMouseUp={onDragEnd} onTouchEnd={onDragEnd}>
       <div style={{display:'flex',justifyContent:'center',gap:28,marginBottom:12}}>
@@ -339,11 +341,199 @@ function BlockBlast(){
   )
 }
 
+// ── CHESS ─────────────────────────────────────────────────────────
+const INIT_BOARD=[
+  ['r','n','b','q','k','b','n','r'],
+  ['p','p','p','p','p','p','p','p'],
+  [null,null,null,null,null,null,null,null],
+  [null,null,null,null,null,null,null,null],
+  [null,null,null,null,null,null,null,null],
+  [null,null,null,null,null,null,null,null],
+  ['P','P','P','P','P','P','P','P'],
+  ['R','N','B','Q','K','B','N','R'],
+]
+const PIECE_UNICODE={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'}
+function ChessGame(){
+  const [board,setBoard]=useState(()=>INIT_BOARD.map(r=>[...r]))
+  const [selected,setSelected]=useState(null)
+  const [turn,setTurn]=useState('white')
+  const [status,setStatus]=useState('')
+  const [captures,setCaptures]=useState({white:[],black:[]})
+
+  function isWhite(p){return p&&p===p.toUpperCase()}
+  function isBlack(p){return p&&p===p.toLowerCase()}
+
+  function getMoves(b,r,c){
+    const p=b[r][c];if(!p)return[]
+    const moves=[];const white=isWhite(p);const pt=p.toLowerCase()
+    const inBounds=(r,c)=>r>=0&&r<8&&c>=0&&c<8
+    const canGo=(r,c)=>inBounds(r,c)&&!(white?isWhite(b[r][c]):isBlack(b[r][c]))
+    const slide=(dr,dc)=>{let nr=r+dr,nc=c+dc;while(inBounds(nr,nc)){if(b[nr][nc]){if(white?isBlack(b[nr][nc]):isWhite(b[nr][nc]))moves.push([nr,nc]);break}moves.push([nr,nc]);nr+=dr;nc+=dc}}
+    if(pt==='p'){const dir=white?-1:1;if(inBounds(r+dir,c)&&!b[r+dir][c]){moves.push([r+dir,c]);if((white&&r===6)||(!white&&r===1))if(!b[r+2*dir][c])moves.push([r+2*dir,c])};[[r+dir,c-1],[r+dir,c+1]].forEach(([nr,nc])=>{if(inBounds(nr,nc)&&(white?isBlack(b[nr][nc]):isWhite(b[nr][nc])))moves.push([nr,nc])})}
+    if(pt==='n'){[[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dr,dc])=>{if(canGo(r+dr,c+dc))moves.push([r+dr,c+dc])})}
+    if(pt==='b'||pt==='q'){[[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([dr,dc])=>slide(dr,dc))}
+    if(pt==='r'||pt==='q'){[[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr,dc])=>slide(dr,dc))}
+    if(pt==='k'){[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(([dr,dc])=>{if(canGo(r+dr,c+dc))moves.push([r+dr,c+dc])})}
+    return moves
+  }
+
+  function aiMove(b){
+    const moves=[]
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(b[r][c]&&isBlack(b[r][c])){const ms=getMoves(b,r,c);ms.forEach(([tr,tc])=>moves.push({fr:r,fc:c,tr,tc,capture:b[tr][tc]}))}
+    if(!moves.length)return b
+    const captures=moves.filter(m=>m.capture)
+    const pick=captures.length?captures[Math.floor(Math.random()*captures.length)]:moves[Math.floor(Math.random()*moves.length)]
+    const nb=b.map(r=>[...r]);nb[pick.tr][pick.tc]=nb[pick.fr][pick.fc];nb[pick.fr][pick.fc]=null
+    return nb
+  }
+
+  function handleClick(r,c){
+    if(turn!=='white')return
+    const p=board[r][c]
+    if(selected){
+      const [sr,sc]=selected
+      const moves=getMoves(board,sr,sc)
+      if(moves.some(([mr,mc])=>mr===r&&mc===c)){
+        const nb=board.map(r=>[...r])
+        const cap=nb[r][c]
+        nb[r][c]=nb[sr][sc];nb[sr][sc]=null
+        const newCaps={...captures}
+        if(cap){newCaps.white=[...newCaps.white,cap]}
+        setBoard(nb);setCaptures(newCaps);setSelected(null);setTurn('black');setStatus('IA pensando...')
+        setTimeout(()=>{
+          const ab=aiMove(nb)
+          setBoard(ab);setTurn('white');setStatus('')
+        },600)
+      }else if(p&&isWhite(p)){setSelected([r,c])}
+      else{setSelected(null)}
+    }else{
+      if(p&&isWhite(p))setSelected([r,c])
+    }
+  }
+
+  function reset(){setBoard(INIT_BOARD.map(r=>[...r]));setSelected(null);setTurn('white');setStatus('');setCaptures({white:[],black:[]})}
+
+  const moves=selected?getMoves(board,selected[0],selected[1]):[]
+
+  return(
+    <div style={{textAlign:'center',userSelect:'none'}}>
+      <div style={{display:'flex',justifyContent:'center',gap:16,marginBottom:12,flexWrap:'wrap'}}>
+        <div style={{fontSize:13,color:'var(--t-muted)',fontWeight:600}}>♔ Você: {captures.white.map(p=>PIECE_UNICODE[p]||p).join('')||'—'}</div>
+        <div style={{fontSize:13,color:'var(--t-muted)',fontWeight:600}}>♚ IA: {captures.black.map(p=>PIECE_UNICODE[p]||p).join('')||'—'}</div>
+      </div>
+      <div style={{display:'inline-grid',gridTemplateColumns:'repeat(8,1fr)',border:'3px solid var(--t-border)',borderRadius:12,overflow:'hidden',boxShadow:'0 8px 32px rgba(0,0,0,0.2)',marginBottom:12}}>
+        {board.map((row,ri)=>row.map((cell,ci)=>{
+          const isDark=(ri+ci)%2===1
+          const isSel=selected&&selected[0]===ri&&selected[1]===ci
+          const isMove=moves.some(([mr,mc])=>mr===ri&&mc===ci)
+          const CS=Math.min(52,Math.floor(320/8))
+          return(
+            <div key={`${ri}-${ci}`} onClick={()=>handleClick(ri,ci)}
+              style={{width:CS,height:CS,background:isSel?'#f6f669':isMove?(isDark?'#cdd16f':'#aed26c'):isDark?'#b58863':'#f0d9b5',display:'flex',alignItems:'center',justifyContent:'center',fontSize:CS*0.6,cursor:'pointer',position:'relative',transition:'background 0.15s'}}>
+              {cell&&<span style={{lineHeight:1,filter:isWhite(cell)?'drop-shadow(0 1px 1px rgba(0,0,0,0.4))':'drop-shadow(0 1px 1px rgba(255,255,255,0.2))'}}>{PIECE_UNICODE[cell]||cell}</span>}
+              {isMove&&!cell&&<div style={{width:CS*0.3,height:CS*0.3,borderRadius:'50%',background:'rgba(0,0,0,0.2)',position:'absolute'}}/>}
+            </div>
+          )
+        }))}
+      </div>
+      <div style={{marginBottom:12}}>
+        {status&&<p style={{fontSize:13,color:'var(--t-muted)',marginBottom:8}}>{status}</p>}
+        <p style={{fontSize:13,color:'var(--t-muted)',margin:0}}>{turn==='white'?'♔ Sua vez — clique uma peça branca':'⏳ IA jogando...'}</p>
+      </div>
+      <button onClick={reset} style={{padding:'9px 22px',background:'none',border:'2px solid var(--t-border)',borderRadius:12,fontSize:13,cursor:'pointer',fontFamily:'inherit',color:'var(--t-text)',fontWeight:600}}>↺ Nova Partida</button>
+    </div>
+  )
+}
+
+// ── JOGO ESTRATÉGICO MYDOW ────────────────────────────────────────
+const STRAT_SIZE=9
+const STRAT_COLORS=['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c']
+function StrategicGame(){
+  const [grid,setGrid]=useState(()=>Array(STRAT_SIZE).fill(null).map(()=>Array(STRAT_SIZE).fill(null)))
+  const [turn,setTurn]=useState('player')
+  const [score,setScore]=useState({player:0,ai:0})
+  const [playerColor]=useState(STRAT_COLORS[0])
+  const [aiColor]=useState(STRAT_COLORS[1])
+  const [gameOver,setGameOver]=useState(false)
+  const [selected,setSelected]=useState(null)
+
+  function countTerritory(g,color){let n=0;g.forEach(r=>r.forEach(c=>{if(c===color)n++}));return n}
+
+  function getAdjacent(r,c){return[[r-1,c],[r+1,c],[r,c-1],[r,c+1]].filter(([nr,nc])=>nr>=0&&nr<STRAT_SIZE&&nc>=0&&nc<STRAT_SIZE)}
+
+  function canCapture(g,r,c,color){
+    return getAdjacent(r,c).some(([nr,nc])=>g[nr][nc]===color)
+  }
+
+  function playerPlace(r,c){
+    if(turn!=='player'||grid[r][c]||gameOver)return
+    const ng=grid.map(r=>[...r])
+    ng[r][c]=playerColor
+    const ns={player:countTerritory(ng,playerColor),ai:countTerritory(ng,aiColor)}
+    setGrid(ng);setScore(ns)
+    const empty=ng.flat().filter(x=>!x).length
+    if(empty===0){setGameOver(true);return}
+    setTurn('ai')
+    setTimeout(()=>{
+      const moves=[]
+      for(let r=0;r<STRAT_SIZE;r++)for(let c=0;c<STRAT_SIZE;c++)if(!ng[r][c])moves.push([r,c])
+      if(!moves.length){setGameOver(true);return}
+      const captures=moves.filter(([r,c])=>canCapture(ng,r,c,playerColor))
+      const adjacent=moves.filter(([r,c])=>canCapture(ng,r,c,aiColor))
+      const pick=captures.length?captures[Math.floor(Math.random()*captures.length)]:adjacent.length?adjacent[Math.floor(Math.random()*adjacent.length)]:moves[Math.floor(Math.random()*moves.length)]
+      const ag=[...ng.map(r=>[...r])];ag[pick[0]][pick[1]]=aiColor
+      const as2={player:countTerritory(ag,playerColor),ai:countTerritory(ag,aiColor)}
+      setGrid(ag);setScore(as2)
+      if(ag.flat().filter(x=>!x).length===0)setGameOver(true)
+      else setTurn('player')
+    },500)
+  }
+
+  function reset(){setGrid(Array(STRAT_SIZE).fill(null).map(()=>Array(STRAT_SIZE).fill(null)));setTurn('player');setScore({player:0,ai:0});setGameOver(false)}
+
+  const total=STRAT_SIZE*STRAT_SIZE
+  const CS=Math.min(44,Math.floor(340/STRAT_SIZE))
+
+  return(
+    <div style={{textAlign:'center'}}>
+      <div style={{display:'flex',justifyContent:'center',gap:28,marginBottom:14}}>
+        <div><div style={{fontSize:22,fontWeight:800,color:playerColor}}>{score.player}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>🔴 Você</div></div>
+        <div><div style={{fontSize:16,fontWeight:600,color:'var(--t-muted)',paddingTop:4}}>{total-score.player-score.ai} livres</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Território</div></div>
+        <div><div style={{fontSize:22,fontWeight:800,color:aiColor}}>{score.ai}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>🔵 IA</div></div>
+      </div>
+      <div style={{display:'inline-grid',gridTemplateColumns:`repeat(${STRAT_SIZE},${CS}px)`,gap:3,background:'var(--t-border)',padding:4,borderRadius:14,boxShadow:'0 8px 32px rgba(0,0,0,0.2)',marginBottom:14}}>
+        {grid.map((row,ri)=>row.map((cell,ci)=>{
+          const isAdj=!cell&&turn==='player'&&getAdjacent(ri,ci).some(([nr,nc])=>grid[nr][nc]===playerColor)
+          return(
+            <div key={`${ri}-${ci}`} onClick={()=>playerPlace(ri,ci)}
+              style={{width:CS,height:CS,borderRadius:8,background:cell===playerColor?playerColor:cell===aiColor?aiColor:isAdj?playerColor+'33':'var(--t-card)',cursor:!cell&&turn==='player'&&!gameOver?'pointer':'default',transition:'all 0.2s',boxShadow:cell?`inset 0 -3px 0 rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.3),0 0 ${cell===playerColor?'8px '+playerColor+'66':'6px '+aiColor+'44'}`:'none',border:isAdj?`2px solid ${playerColor}55`:'2px solid transparent'}}
+            />
+          )
+        }))}
+      </div>
+      <div style={{marginBottom:12}}>
+        {gameOver?(
+          <div>
+            <p style={{fontSize:18,fontWeight:800,color:score.player>score.ai?playerColor:score.ai>score.player?aiColor:'var(--t-muted)',marginBottom:10}}>
+              {score.player>score.ai?'🎉 Você venceu!':score.ai>score.player?'😢 Que Pena, Você Perdeu!':'🤝 Empate!'}
+            </p>
+            <button onClick={reset} style={{padding:'10px 28px',background:ORANGE,color:'#fff',border:'none',borderRadius:12,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Jogar Novamente</button>
+          </div>
+        ):(
+          <p style={{fontSize:13,color:'var(--t-muted)'}}>{turn==='player'?'🔴 Sua vez — clique em uma célula':'🔵 IA escolhendo...'}</p>
+        )}
+      </div>
+      {!gameOver&&<button onClick={reset} style={{padding:'8px 20px',background:'none',border:'2px solid var(--t-border)',borderRadius:10,fontSize:13,cursor:'pointer',fontFamily:'inherit',color:'var(--t-text)',fontWeight:600}}>↺ Reiniciar</button>}
+      <p style={{fontSize:11,color:'var(--t-muted)',marginTop:8}}>Conquiste mais território que a IA · Células destacadas = posições estratégicas</p>
+    </div>
+  )
+}
+
 // ── GAMES UI ──────────────────────────────────────────────────────
 function GamesUI() {
   const [activeGame, setActiveGame] = useState(null)
-  const games = { tictactoe: <TicTacToe/>, memory: <MemoryGame/>, snake: <SnakeGame/>, blockblast: <BlockBlast/> }
-  const titles = { tictactoe:'⭕ Jogo da Velha', memory:'🃏 Jogo da Memória', snake:'🐍 Snake', blockblast:'🧱 Block Blast 3D' }
+  const games = { tictactoe: <TicTacToe/>, memory: <MemoryGame/>, snake: <SnakeGame/>, blockblast: <BlockBlast/>, chess: <ChessGame/>, strategic: <StrategicGame/> }
+  const titles = { tictactoe:'⭕ Jogo da Velha', memory:'🃏 Jogo da Memória', snake:'🐍 Snake', blockblast:'🧱 Block Blast 3D', chess:'♟️ Xadrez', strategic:'🎯 Jogo Estratégico Mydow' }
   if (activeGame && games[activeGame]) {
     return (
       <div style={{flex:1,display:'flex',flexDirection:'column',overflowY:'auto'}}>
