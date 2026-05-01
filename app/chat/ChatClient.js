@@ -229,7 +229,7 @@ function UsageModal({ user, msgCount, onClose, onOpenUpgrade }) {
                   style={{ transform: 'rotate(-90deg)', transformOrigin: '50px 50px', transition: 'stroke-dashoffset 0.8s ease' }} />
               </svg>
               <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 18, fontWeight: 800, color: strokeColor }}>{remaining}</span>
+                <span style={{ fontSize: 18, fontWeight: 800, color: strokeColor }}>{used}</span>
                 <span style={{ fontSize: 11, color: 'var(--t-muted)' }}>/{limit}</span>
               </div>
             </div>
@@ -493,7 +493,6 @@ function SettingsModal({ user, onClose, settings, onUpdateSettings, onDeleteAcco
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[
               { id: 'appearance', label: '🌓 Aparência', desc: settings.theme === 'dark' ? 'Modo escuro' : 'Modo claro' },
-              { id: 'language', label: '🌐 Idioma', desc: settings.language === 'pt' ? 'Português' : settings.language === 'en' ? 'English' : 'Español' },
               { id: 'font', label: '🔤 Fonte', desc: settings.fontSize === 'small' ? 'Pequena' : settings.fontSize === 'large' ? 'Grande' : 'Normal' },
               { id: 'lgpd', label: '📋 LGPD', desc: 'Termos e privacidade' },
               { id: 'delete', label: '🗑 Excluir Conta', desc: 'Remover todos os dados', danger: true },
@@ -577,6 +576,10 @@ function SettingsModal({ user, onClose, settings, onUpdateSettings, onDeleteAcco
               {user.accepted_at ? new Date(user.accepted_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) : 'Data não registrada'}
             </p>
             <LGPDLinks />
+            <div style={{ marginTop: 16, padding: '12px 16px', background: 'rgba(232,122,47,0.08)', border: '1.5px solid rgba(232,122,47,0.3)', borderRadius: 12, textAlign: 'center' }}>
+              <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 700, color: '#C96520' }}>Você Acessou o Mydow e Aceitou Nossos Termos de Uso</p>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#C96520' }}>Você Acessou o Mydow e Aceitou Nossa Política de Privacidade</p>
+            </div>
           </div>
         </div>
       )}
@@ -960,7 +963,10 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
 
   // Apply CSS custom properties for dark mode (BUG 7)
   useEffect(() => { applyTheme(settings.theme === 'dark') }, [settings.theme])
-  useEffect(() => { document.documentElement.style.setProperty('--font-size', fontSize) }, [fontSize])
+   useEffect(() => {
+    document.documentElement.style.fontSize = fontSize
+    document.documentElement.style.setProperty('--font-size', fontSize)
+  }, [fontSize])
 
   const [view, setView] = useState('home')
   const [activeConvId, setActiveConvId] = useState(null)
