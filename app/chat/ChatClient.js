@@ -1162,8 +1162,8 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
       }
 
       // Finalize message — detect [DOC] tag for downloadable document
-      if (full.trimStart().startsWith('[DOC]')) {
-        const docContent = full.replace(/^\[DOC\]\s*/m, '').trim()
+      if (full.includes('[DOC]')) {
+        const docContent = full.split('[DOC]')[1]?.replace(/```markdown|```/g, '').trim() || full
         setMessages(prev => prev.map(m => m.id === assistantId ? {
           ...m,
           content: '📄 Documento gerado! Clique abaixo para baixar.',
