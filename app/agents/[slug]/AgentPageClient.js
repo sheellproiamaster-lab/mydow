@@ -713,6 +713,7 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
 
 // ── MAIN EXPORT ───────────────────────────────────────────────────
 const CHAT_AGENTS = ['academic', 'nexus', 'kyw', 'jud', 'shyw']
+const NO_SAVE_AGENTS = ['tradutor', 'games', 'organizador']
 
 export default function AgentPageClient({ slug, user, messageCount, memory }) {
   const router = useRouter()
