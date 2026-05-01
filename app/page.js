@@ -23,6 +23,67 @@ const CAPABILITIES = [
 const TYPING_TEXT = 'Mydow';
 const CHAR_W = 28;
 
+function TermsModal({ onClose }) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ background: '#fdf0e0', borderRadius: 20, padding: 28, maxWidth: 580, width: '100%', maxHeight: '80vh', overflow: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: '#111' }}>Termos de Uso</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }}>✕</button>
+        </div>
+        <div style={{ fontSize: 13, lineHeight: 1.7, color: '#666' }}>
+          {[
+            ['1. Aceitação dos Termos', 'Ao acessar e utilizar o Mydow, você concorda com os presentes Termos de Uso. O Mydow é uma plataforma desenvolvida e operada pela Michel Macedo Holding.'],
+            ['2. Descrição do Serviço', 'O Mydow é um agente executor desenvolvido para realizar tarefas de alto nível, auxiliar na tomada de decisões estratégicas e apoiar os usuários em suas demandas pessoais e profissionais.'],
+            ['3. Elegibilidade e Cadastro', 'Para utilizar o Mydow, o usuário deve ter 18 anos ou mais e fornecer informações verídicas no momento do cadastro.'],
+            ['4. Uso Adequado da Plataforma', 'O usuário compromete-se a utilizar o Mydow de forma ética e legal. É vedado o uso para fins ilícitos, difamatórios ou que causem danos a terceiros.'],
+            ['5. Responsabilidades do Usuário', 'O usuário é responsável por todas as interações em sua conta e pela segurança de suas credenciais. A Michel Macedo Holding não se responsabiliza por decisões tomadas com base nas respostas do Mydow.'],
+            ['6. Propriedade Intelectual', 'Toda a propriedade intelectual relacionada ao Mydow pertence à Michel Macedo Holding. É proibida a reprodução ou comercialização sem autorização expressa.'],
+            ['7. Disposições Gerais', 'Estes Termos podem ser alterados a qualquer momento. O foro competente é o da comarca de domicílio da Michel Macedo Holding.'],
+          ].map(([t, d]) => (
+            <div key={t} style={{ marginBottom: 16 }}>
+              <strong style={{ color: '#111', display: 'block', marginBottom: 4 }}>{t}</strong>
+              <p style={{ margin: 0 }}>{d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PrivacyModal({ onClose }) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+      <div style={{ background: '#fdf0e0', borderRadius: 20, padding: 28, maxWidth: 580, width: '100%', maxHeight: '80vh', overflow: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: '#111' }}>Política de Privacidade</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888' }}>✕</button>
+        </div>
+        <div style={{ fontSize: 13, lineHeight: 1.7, color: '#666' }}>
+          {[
+            ['1. Informações Coletadas', 'Coletamos nome, e-mail, dados de interação e informações de pagamento, tratados conforme a LGPD (Lei 13.709/2018).'],
+            ['2. Uso das Informações', 'Usamos as informações para fornecer e melhorar o serviço, personalizar a experiência e garantir a segurança da plataforma.'],
+            ['3. Armazenamento e Segurança', 'Dados armazenados em servidores seguros com criptografia. Adotamos medidas técnicas contra acesso não autorizado.'],
+            ['4. Compartilhamento de Informações', 'Não vendemos dados. Compartilhamento apenas para prestação do serviço ou por obrigação legal.'],
+            ['5. Direitos do Usuário', 'Você pode acessar, corrigir, exportar ou solicitar exclusão de seus dados pelo suporte oficial.'],
+            ['6. Retenção de Dados', 'Dados mantidos enquanto a conta estiver ativa. Após exclusão, removidos conforme a legislação.'],
+            ['7. Cookies', 'Usamos cookies para autenticar usuários e garantir o funcionamento da plataforma.'],
+            ['8. Alterações na Política', 'Alterações significativas serão comunicadas. O uso continuado implica aceitação da nova política.'],
+            ['9. Contato', 'Para dúvidas sobre privacidade, entre em contato pelo suporte oficial do Mydow.'],
+            ['10. Legislação Aplicável', 'Regida pela LGPD (Lei 13.709/2018) e demais legislações brasileiras aplicáveis.'],
+          ].map(([t, d]) => (
+            <div key={t} style={{ marginBottom: 16 }}>
+              <strong style={{ color: '#111', display: 'block', marginBottom: 4 }}>{t}</strong>
+              <p style={{ margin: 0 }}>{d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MydowTyping() {
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -36,22 +97,11 @@ function MydowTyping() {
   return (
     <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ height: '22px', position: 'relative', width: `${totalW}px`, marginBottom: '2px' }}>
-        <span style={{
-          position: 'absolute', left: `${count * CHAR_W}px`, top: 0,
-          fontSize: '14px', transition: 'left 0.28s ease',
-          opacity: count <= TYPING_TEXT.length ? 1 : 0,
-          color: '#E87A2F', lineHeight: 1,
-        }}>➤</span>
+        <span style={{ position: 'absolute', left: `${count * CHAR_W}px`, top: 0, fontSize: '14px', transition: 'left 0.28s ease', opacity: count <= TYPING_TEXT.length ? 1 : 0, color: '#E87A2F', lineHeight: 1 }}>➤</span>
       </div>
       <div style={{ display: 'flex' }}>
         {TYPING_TEXT.split('').map((char, i) => (
-          <span key={i} style={{
-            display: 'inline-block', width: `${CHAR_W}px`, textAlign: 'center',
-            fontSize: '32px', fontWeight: 900,
-            background: 'linear-gradient(135deg, #E87A2F, #D4AF37)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            opacity: count > i ? 1 : 0, transition: 'opacity 0.18s ease',
-          }}>{char}</span>
+          <span key={i} style={{ display: 'inline-block', width: `${CHAR_W}px`, textAlign: 'center', fontSize: '32px', fontWeight: 900, background: 'linear-gradient(135deg, #E87A2F, #D4AF37)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', opacity: count > i ? 1 : 0, transition: 'opacity 0.18s ease' }}>{char}</span>
         ))}
       </div>
     </div>
@@ -70,18 +120,10 @@ function LoginModal({ onClose }) {
     if (!form.nome || !form.email || !form.senha) { setError('Preencha todos os campos.'); return; }
     setLoading(true); setError('');
     const supabase = createClient();
-    const { data, error: authErr } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.senha,
-      options: { data: { name: form.nome } },
-    });
+    const { data, error: authErr } = await supabase.auth.signUp({ email: form.email, password: form.senha, options: { data: { name: form.nome } } });
     if (authErr) { setError(authErr.message); setLoading(false); return; }
     if (data.user) {
-      await fetch('/api/user/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: data.user.id, email: form.email, name: form.nome }),
-      }).catch(() => {})
+      await fetch('/api/user/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: data.user.id, email: form.email, name: form.nome }) }).catch(() => {});
     }
     router.push('/chat');
   }
@@ -90,10 +132,7 @@ function LoginModal({ onClose }) {
     if (!form.email || !form.senha) { setError('Preencha e-mail e senha.'); return; }
     setLoading(true); setError('');
     const supabase = createClient();
-    const { error: authErr } = await supabase.auth.signInWithPassword({
-      email: form.email,
-      password: form.senha,
-    });
+    const { error: authErr } = await supabase.auth.signInWithPassword({ email: form.email, password: form.senha });
     if (authErr) { setError('E-mail ou senha incorretos.'); setLoading(false); return; }
     router.push('/chat');
   }
@@ -101,48 +140,20 @@ function LoginModal({ onClose }) {
   async function handleGoogleSignIn() {
     setLoading(true); setError('');
     const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: { prompt: 'select_account', access_type: 'offline' },
-      },
-    });
+    await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/auth/callback`, queryParams: { prompt: 'select_account', access_type: 'offline' } } });
   }
 
   return (
     <>
-      <div onClick={onClose} style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)',
-        zIndex: 200, backdropFilter: 'blur(6px)',
-      }} />
-      <div style={{
-        position: 'fixed',
-        top: '50%', left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 'min(400px, 92vw)',
-        maxHeight: '85vh',
-        background: '#fdf0e0',
-        borderRadius: '24px',
-        zIndex: 201,
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        boxShadow: '0 24px 80px rgba(0,0,0,0.25)',
-        animation: 'scaleIn 0.3s ease',
-      }}>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 200, backdropFilter: 'blur(6px)' }} />
+      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 'min(400px, 92vw)', maxHeight: '85vh', background: '#fdf0e0', borderRadius: '24px', zIndex: 201, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', animation: 'scaleIn 0.3s ease' }}>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 0' }}>
           <div style={{ width: '40px', height: '4px', borderRadius: '2px', background: 'rgba(0,0,0,0.12)' }} />
         </div>
-        <p style={{ textAlign: 'center', fontSize: '13px', color: '#777', margin: '12px 24px 0', fontStyle: 'italic' }}>
-          Acesse o Mydow para executar suas tarefas
-        </p>
+        <p style={{ textAlign: 'center', fontSize: '13px', color: '#777', margin: '12px 24px 0', fontStyle: 'italic' }}>Acesse o Mydow para executar suas tarefas</p>
         <div style={{ display: 'flex', margin: '14px 24px 0', borderRadius: '12px', background: 'rgba(0,0,0,0.06)', padding: '3px' }}>
           {['criar', 'entrar'].map((t) => (
-            <button key={t} onClick={() => { setTab(t); setError(''); }} style={{
-              flex: 1, padding: '9px', border: 'none', borderRadius: '10px',
-              fontWeight: 700, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit',
-              background: tab === t ? '#E87A2F' : 'transparent',
-              color: tab === t ? '#fff' : '#888', transition: 'all 0.2s ease',
-            }}>{t === 'criar' ? 'Criar Conta' : 'Entrar'}</button>
+            <button key={t} onClick={() => { setTab(t); setError(''); }} style={{ flex: 1, padding: '9px', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit', background: tab === t ? '#E87A2F' : 'transparent', color: tab === t ? '#fff' : '#888', transition: 'all 0.2s ease' }}>{t === 'criar' ? 'Criar Conta' : 'Entrar'}</button>
           ))}
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '14px 24px 0' }}>
@@ -152,17 +163,13 @@ function LoginModal({ onClose }) {
               <input className="modal-input" placeholder="Nome" value={form.nome} onChange={set('nome')} />
               <input className="modal-input" placeholder="E-mail" type="email" value={form.email} onChange={set('email')} />
               <input className="modal-input" placeholder="Senha" type="password" value={form.senha} onChange={set('senha')} />
-              <button className="btn-orange modal-btn" onClick={handleSignUp} disabled={loading}>
-                {loading ? 'Criando...' : 'Criar Conta'}
-              </button>
+              <button className="btn-orange modal-btn" onClick={handleSignUp} disabled={loading}>{loading ? 'Criando...' : 'Criar Conta'}</button>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <input className="modal-input" placeholder="E-mail" type="email" value={form.email} onChange={set('email')} />
               <input className="modal-input" placeholder="Senha" type="password" value={form.senha} onChange={set('senha')} />
-              <button className="btn-orange modal-btn" onClick={handleSignIn} disabled={loading}>
-                {loading ? 'Entrando...' : 'Entrar'}
-              </button>
+              <button className="btn-orange modal-btn" onClick={handleSignIn} disabled={loading}>{loading ? 'Entrando...' : 'Entrar'}</button>
             </div>
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '4px 0' }}>
@@ -186,140 +193,84 @@ function LoginModal({ onClose }) {
 export default function Home() {
   const [currentCap, setCurrentCap] = useState(0);
   const [capVisible, setCapVisible] = useState(true);
-  const [showModal, setShowModal]   = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [btnClicked, setBtnClicked] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCapVisible(false);
-      const t = setTimeout(() => {
-        setCurrentCap((p) => (p + 1) % CAPABILITIES.length);
-        setCapVisible(true);
-      }, 420);
+      const t = setTimeout(() => { setCurrentCap((p) => (p + 1) % CAPABILITIES.length); setCapVisible(true); }, 420);
       return () => clearTimeout(t);
     }, 3500);
     return () => clearInterval(interval);
   }, []);
 
+  function handleComeclar() {
+    setBtnClicked(true);
+    setTimeout(() => { setBtnClicked(false); setShowModal(true); }, 400);
+  }
+
   return (
     <>
-      {/* página inteira: coluna com fundo creme */}
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh', background: '#fdf0e0' }}>
-
-        {/* ── CONTEÚDO PRINCIPAL ── */}
         <main style={{ flex: 1, display: 'flex' }}>
-
-          {/* ── ESQUERDA: quadrado branco flutuando no creme ── */}
           <div className="left-panel">
             <div className="white-box">
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                <p
-                  key={currentCap}
-                  style={{
-                    fontSize: 'clamp(28px, 3.2vw, 52px)',
-                    fontWeight: 800,
-                    fontStyle: 'italic',
-                    lineHeight: 1.15,
-                    color: '#111',
-                    letterSpacing: '-0.025em',
-                    textAlign: 'center',
-                    margin: 0,
-                    opacity: capVisible ? 1 : 0,
-                    transform: capVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.97)',
-                    transition: 'opacity 0.4s ease, transform 0.4s ease',
-                  }}
-                >
-                  {CAPABILITIES[currentCap]}
-                </p>
+                <p key={currentCap} style={{ fontSize: 'clamp(28px, 3.2vw, 52px)', fontWeight: 800, fontStyle: 'italic', lineHeight: 1.15, color: '#111', letterSpacing: '-0.025em', textAlign: 'center', margin: 0, opacity: capVisible ? 1 : 0, transform: capVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.97)', transition: 'opacity 0.4s ease, transform 0.4s ease' }}>{CAPABILITIES[currentCap]}</p>
               </div>
-              {/* barra laranja */}
               <div style={{ width: '100%', height: '3px', background: 'rgba(0,0,0,0.07)', borderRadius: '2px', overflow: 'hidden', marginTop: '24px' }}>
-                <div key={`bar-${currentCap}`} style={{
-                  height: '100%',
-                  background: 'linear-gradient(90deg, #E87A2F, #D4AF37)',
-                  borderRadius: '2px',
-                  animation: 'progressBar 3.5s linear forwards',
-                }} />
+                <div key={`bar-${currentCap}`} style={{ height: '100%', background: 'linear-gradient(90deg, #E87A2F, #D4AF37)', borderRadius: '2px', animation: 'progressBar 3.5s linear forwards' }} />
               </div>
             </div>
           </div>
 
-          {/* ── DIREITA: imagem + nome + frase + botão + framework ── */}
           <div className="right-panel">
-
-            {/* imagem colada ao nome — margem bottom zero na imagem */}
             <div className="agent-wrap float-agent">
               <Image src="/images/mydow.png" alt="Mydow" fill style={{ objectFit: 'contain' }} priority />
             </div>
-
-            {/* nome imediatamente abaixo, sem margem top */}
-            <h1 style={{
-              fontSize: 'clamp(42px, 4.8vw, 70px)',
-              fontWeight: 900,
-              letterSpacing: '-0.04em',
-              lineHeight: 1,
-              background: 'linear-gradient(135deg, #E87A2F 0%, #D4AF37 50%, #C96520 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              margin: 0,
-            }}>
-              Mydow
-            </h1>
-
-            <p style={{
-              fontSize: 'clamp(13px, 1.3vw, 17px)',
-              fontWeight: 800,
-              color: '#222',
-              margin: 0,
-              textAlign: 'center',
-              maxWidth: '320px',
-              lineHeight: 1.4,
-              letterSpacing: '-0.01em',
-            }}>
-              Seu Agente que executa tarefas de alto nível
-            </p>
+            <h1 style={{ fontSize: 'clamp(42px, 4.8vw, 70px)', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1, background: 'linear-gradient(135deg, #E87A2F 0%, #D4AF37 50%, #C96520 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', margin: 0 }}>Mydow</h1>
+            <p style={{ fontSize: 'clamp(13px, 1.3vw, 17px)', fontWeight: 800, color: '#222', margin: 0, textAlign: 'center', maxWidth: '320px', lineHeight: 1.4, letterSpacing: '-0.01em' }}>Seu Agente que executa tarefas de alto nível</p>
 
             <button
-              className="btn-orange"
-              onClick={() => setShowModal(true)}
+              className="btn-luxury"
+              onClick={handleComeclar}
               style={{
-                padding: '13px 40px',
+                padding: '14px 44px',
                 borderRadius: '50px',
                 border: 'none',
                 color: 'white',
                 fontSize: '15px',
                 fontWeight: 700,
                 cursor: 'pointer',
-                letterSpacing: '0.03em',
+                letterSpacing: '0.06em',
                 fontFamily: 'inherit',
+                transform: btnClicked ? 'scale(0.95)' : 'scale(1)',
+                transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
             >
-              Começar
+              ✦ Começar
             </button>
 
-            {/* framework — começa do meio da tela (left: 50vw) */}
+            <div style={{ display: 'flex', gap: 16, marginTop: 4 }}>
+              <button onClick={() => setShowTerms(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: '#C96520', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, textDecoration: 'underline', opacity: 0.8 }}>Termos de Uso</button>
+              <span style={{ fontSize: 12, color: '#C96520', opacity: 0.5 }}>·</span>
+              <button onClick={() => setShowPrivacy(true)} style={{ background: 'none', border: 'none', fontSize: 12, color: '#C96520', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600, textDecoration: 'underline', opacity: 0.8 }}>Política de Privacidade</button>
+            </div>
+
             <div className="fw-inline">
               {[
                 { letter: 'M', title: 'Mente Estratégica', desc: 'Planeja e antecipa com precisão.' },
-                { letter: 'Y', title: 'Your Agent',         desc: 'Disponível 24h, na sua voz.' },
-                { letter: 'D', title: 'Decisão Autônoma',   desc: 'Executa sem aprovação constante.' },
+                { letter: 'Y', title: 'Your Agent', desc: 'Disponível 24h, na sua voz.' },
+                { letter: 'D', title: 'Decisão Autônoma', desc: 'Executa sem aprovação constante.' },
                 { letter: 'O', title: 'Orquestração Total', desc: 'Conecta tudo em harmonia.' },
-                { letter: 'W', title: 'Workflow Elevado',   desc: 'Complexo vira extraordinário.' },
+                { letter: 'W', title: 'Workflow Elevado', desc: 'Complexo vira extraordinário.' },
               ].map((item, i) => (
-                <div key={item.letter} className="fw-inline-card"
-                  style={{ animationDelay: `${i * 0.06}s` }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#fff';
-                    e.currentTarget.style.borderColor = 'rgba(232,122,47,0.4)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 6px 20px rgba(232,122,47,0.12)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.7)';
-                    e.currentTarget.style.borderColor = 'rgba(232,122,47,0.13)';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
+                <div key={item.letter} className="fw-inline-card" style={{ animationDelay: `${i * 0.06}s` }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = 'rgba(232,122,47,0.4)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(232,122,47,0.12)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.7)'; e.currentTarget.style.borderColor = 'rgba(232,122,47,0.13)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                 >
                   <div className="fw-inline-letter">{item.letter}</div>
                   <div className="fw-inline-title">{item.title}</div>
@@ -330,153 +281,50 @@ export default function Home() {
           </div>
         </main>
 
-        {/* ── RODAPÉ ── */}
-        <footer style={{
-          background: '#0A0A0A',
-          padding: '18px 24px',
-          textAlign: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '6px',
-        }}>
-          <div style={{ fontSize: '11px', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600,
-            background: 'linear-gradient(135deg, #E87A2F, #D4AF37)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-          }}>
-            Desenvolvido por Michel Macedo Holding
-          </div>
+        <footer style={{ background: '#0A0A0A', padding: '18px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+          <div style={{ fontSize: '11px', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600, background: 'linear-gradient(135deg, #E87A2F, #D4AF37)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Desenvolvido por Michel Macedo Holding</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{
-              fontSize: '15px', fontWeight: 900,
-              background: 'linear-gradient(135deg, #E87A2F, #D4AF37)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>Mydow</span>
-            <span style={{
-              fontSize: '13px', fontWeight: 700,
-              background: 'linear-gradient(135deg, #E87A2F, #D4AF37)',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
-            }}>2026 ©</span>
+            <span style={{ fontSize: '15px', fontWeight: 900, background: 'linear-gradient(135deg, #E87A2F, #D4AF37)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Mydow</span>
+            <span style={{ fontSize: '13px', fontWeight: 700, background: 'linear-gradient(135deg, #E87A2F, #D4AF37)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>2026 ©</span>
           </div>
         </footer>
       </div>
 
-      {/* ── MODAL ── */}
       {showModal && <LoginModal onClose={() => setShowModal(false)} />}
+      {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+      {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
 
       <style>{`
-        /* ── DESKTOP ── */
-        .left-panel {
-          width: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 48px;
-        }
-        .white-box {
-          width: 100%;
-          height: 100%;
-          background-color: #ffffff;
-          background-image:
-            linear-gradient(rgba(0,0,0,0.055) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0,0,0,0.055) 1px, transparent 1px);
-          background-size: 44px 44px;
-          border-radius: 20px;
-          padding: 40px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          box-shadow: 0 4px 40px rgba(0,0,0,0.06);
-        }
-        .right-panel {
-          width: 50%;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          padding: 32px 32px 32px 0;
-        }
-        .agent-wrap {
-          width: 300px;
-          height: 300px;
-          position: relative;
-          flex-shrink: 0;
-        }
-        .fw-inline {
-          display: flex;
-          gap: 8px;
-          width: 100%;
-          margin-top: 8px;
-        }
-        .fw-inline-card {
-          flex: 1;
-          background: rgba(255,255,255,0.7);
-          border: 1px solid rgba(232,122,47,0.13);
-          border-radius: 12px;
-          padding: 12px 10px;
-          transition: all 0.22s ease;
-          cursor: default;
-          animation: fadeInUp 0.4s ease both;
-        }
-        .fw-inline-letter {
-          font-size: 26px;
-          font-weight: 900;
-          line-height: 1;
-          margin-bottom: 5px;
-          background: linear-gradient(135deg, #E87A2F, #D4AF37);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .fw-inline-title {
-          font-size: 10px;
-          font-weight: 700;
-          color: #111;
-          margin-bottom: 3px;
-          line-height: 1.2;
-        }
-        .fw-inline-desc {
-          font-size: 9.5px;
-          color: #777;
-          line-height: 1.4;
-          margin: 0;
-        }
-
-        /* ── ANIMAÇÕES ── */
+        .left-panel { width: 50%; display: flex; align-items: center; justify-content: center; padding: 48px; }
+        .white-box { width: 100%; height: 100%; background-color: #ffffff; background-image: linear-gradient(rgba(0,0,0,0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.055) 1px, transparent 1px); background-size: 44px 44px; border-radius: 20px; padding: 40px; display: flex; flex-direction: column; justify-content: center; align-items: center; box-shadow: 0 4px 40px rgba(0,0,0,0.06); }
+        .right-panel { width: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 32px 32px 32px 0; }
+        .agent-wrap { width: 300px; height: 300px; position: relative; flex-shrink: 0; }
+        .fw-inline { display: flex; gap: 8px; width: 100%; margin-top: 8px; }
+        .fw-inline-card { flex: 1; background: rgba(255,255,255,0.7); border: 1px solid rgba(232,122,47,0.13); border-radius: 12px; padding: 12px 10px; transition: all 0.22s ease; cursor: default; animation: fadeInUp 0.4s ease both; }
+        .fw-inline-letter { font-size: 26px; font-weight: 900; line-height: 1; margin-bottom: 5px; background: linear-gradient(135deg, #E87A2F, #D4AF37); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .fw-inline-title { font-size: 10px; font-weight: 700; color: #111; margin-bottom: 3px; line-height: 1.2; }
+        .fw-inline-desc { font-size: 9.5px; color: #777; line-height: 1.4; margin: 0; }
         @keyframes progressBar { from { width: 0%; } to { width: 100%; } }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes scaleIn { from { opacity:0; transform: translate(-50%,-50%) scale(0.92); } to { opacity:1; transform: translate(-50%,-50%) scale(1); } }
-        .btn-orange {
-          background: linear-gradient(135deg, #E87A2F 0%, #C96520 60%, #FFB347 100%);
-          transition: all 0.3s ease;
+        @keyframes luxuryPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0.4), 0 8px 32px rgba(232,122,47,0.35); } 50% { box-shadow: 0 0 0 8px rgba(212,175,55,0), 0 12px 40px rgba(232,122,47,0.5); } }
+        .btn-luxury {
+          background: linear-gradient(135deg, #C96520 0%, #E87A2F 30%, #D4AF37 60%, #E87A2F 80%, #C96520 100%);
+          background-size: 200% auto;
+          animation: luxuryShine 3s linear infinite, luxuryPulse 2.5s ease-in-out infinite;
+          box-shadow: 0 8px 32px rgba(232,122,47,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
         }
-        .btn-orange:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 36px rgba(232,122,47,0.45); }
+        .btn-luxury:hover { background-position: right center; transform: translateY(-3px) scale(1.04) !important; box-shadow: 0 14px 44px rgba(212,175,55,0.5), inset 0 1px 0 rgba(255,255,255,0.3); }
+        @keyframes luxuryShine { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
         .float-agent { animation: floatAgent 6s ease-in-out infinite; }
         @keyframes floatAgent { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
-        .modal-input {
-          width: 100%; padding: 11px 14px; border-radius: 10px;
-          border: 1px solid rgba(232,122,47,0.25); background: #fff;
-          font-size: 14px; font-family: inherit; color: #111; outline: none;
-          transition: border-color 0.2s;
-          box-sizing: border-box;
-        }
+        .btn-orange { background: linear-gradient(135deg, #E87A2F 0%, #C96520 60%, #FFB347 100%); transition: all 0.3s ease; }
+        .btn-orange:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 36px rgba(232,122,47,0.45); }
+        .modal-input { width: 100%; padding: 11px 14px; border-radius: 10px; border: 1px solid rgba(232,122,47,0.25); background: #fff; font-size: 14px; font-family: inherit; color: #111; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
         .modal-input:focus { border-color: #E87A2F; }
-        .modal-btn {
-          width: 100%; padding: 13px; border-radius: 12px; border: none;
-          color: white; font-size: 15px; font-weight: 700;
-          cursor: pointer; font-family: inherit;
-        }
-
-        /* ══ MOBILE ══ */
+        .modal-btn { width: 100%; padding: 13px; border-radius: 12px; border: none; color: white; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
         @media (max-width: 768px) {
           .left-panel { display: none; }
-          .right-panel {
-            width: 100%;
-            padding: 60px 32px 40px;
-            gap: 20px;
-          }
+          .right-panel { width: 100%; padding: 60px 32px 40px; gap: 20px; }
           .agent-wrap { width: 260px; height: 260px; }
           .fw-inline { display: none; }
         }
