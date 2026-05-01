@@ -309,12 +309,15 @@ function BlockBlast(){
   function reset(){setGrid(Array(BB_ROWS).fill(null).map(()=>Array(BB_COLS).fill(null)));setPieces([randPiece(),randPiece(),randPiece()]);setScore(0);setLost(false);setExploding(new Set())}
   const CS=typeof window!=='undefined'?Math.min(58,Math.floor((Math.min(window.innerWidth-48,500))/BB_COLS)):44
   return(
-    <div style={{textAlign:'center',userSelect:'none'}} onMouseMove={onDragMove} onTouchMove={onDragMove} onMouseUp={onDragEnd} onTouchEnd={onDragEnd}>
-      <div style={{display:'flex',justifyContent:'center',gap:28,marginBottom:12}}>
-        <div><div style={{fontSize:22,fontWeight:800,color:ORANGE}}>{score}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Score</div></div>
-        <div><div style={{fontSize:22,fontWeight:800,color:'#f39c12'}}>👑 {best}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Recorde</div></div>
+    <div style={{display:'flex',flexDirection:'column',height:'100%',userSelect:'none'}} onMouseMove={onDragMove} onTouchMove={onDragMove} onMouseUp={onDragEnd} onTouchEnd={onDragEnd}>
+      <div style={{display:'flex',justifyContent:'center',alignItems:'center',gap:28,padding:'8px 0',flexShrink:0}}>
+        <div><div style={{fontSize:20,fontWeight:800,color:ORANGE}}>{score}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Score</div></div>
+        <div><div style={{fontSize:20,fontWeight:800,color:'#f39c12'}}>👑 {best}</div><div style={{fontSize:11,color:'var(--t-muted)'}}>Recorde</div></div>
+        <button onClick={reset} style={{padding:'6px 16px',background:'none',border:'1.5px solid var(--t-border)',borderRadius:10,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'var(--t-text)',fontWeight:600}}>↺</button>
       </div>
-      <div ref={gridRef} style={{display:'inline-grid',gridTemplateColumns:`repeat(${BB_COLS},${CS}px)`,gap:2,background:'var(--t-border)',padding:3,borderRadius:14,border:'3px solid var(--t-border)',boxShadow:'0 8px 32px rgba(0,0,0,0.25)',marginBottom:16}}>
+      <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',position:'relative'}}>
+      {lost&&<div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.7)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',zIndex:10,borderRadius:14}}><p style={{fontSize:20,fontWeight:800,color:'#fff',marginBottom:16}}>😢 Que Pena, Você Perdeu!</p><button onClick={reset} style={{padding:'12px 32px',background:ORANGE,color:'#fff',border:'none',borderRadius:12,fontSize:15,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Jogar Novamente</button></div>}
+      <div ref={gridRef} style={{display:'inline-grid',gridTemplateColumns:`repeat(${BB_COLS},${CS}px)`,gap:2,background:'var(--t-border)',padding:3,borderRadius:14,border:'3px solid var(--t-border)',boxShadow:'0 8px 32px rgba(0,0,0,0.25)'}}>
         {grid.map((row,ri)=>row.map((cell,ci)=>{
           const k=`${ri}-${ci}`
           const isExploding=exploding.has(k)
@@ -322,7 +325,8 @@ function BlockBlast(){
           return(<div key={k} style={{width:CS,height:CS,background:isExploding?'#fff':cell||(isHover?pieces[dragging].color+'99':null)||'var(--t-card)',borderRadius:6,boxShadow:cell?`inset 0 -3px 0 rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.3)`:'none',transition:'all 0.15s',transform:isExploding?'scale(1.3)':'scale(1)',opacity:isExploding?0:1}}/>)
         }))}
       </div>
-      <div style={{display:'flex',justifyContent:'center',gap:12,marginBottom:16,flexWrap:'wrap'}}>
+      </div>
+      <div style={{display:'flex',justifyContent:'center',gap:12,padding:'8px 0',flexWrap:'wrap',flexShrink:0}}>
         {pieces.map((p,idx)=>p?(
           <div key={idx} onMouseDown={e=>onDragStart(e,idx)} onTouchStart={e=>onDragStart(e,idx)}
             style={{cursor:'grab',opacity:dragging===idx?0.4:1,padding:8,background:'var(--t-card)',borderRadius:12,border:`2px solid ${p.color}`,boxShadow:`0 4px 0 ${p.color}66`,touchAction:'none',transition:'opacity 0.2s'}}>
@@ -334,9 +338,7 @@ function BlockBlast(){
           </div>
         ):<div key={idx} style={{width:56,height:56}}/>)}
       </div>
-      {lost?(<div><p style={{fontSize:18,fontWeight:700,color:'#e74c3c',marginBottom:10}}>😢 Que Pena, Você Perdeu!</p><button onClick={reset} style={{padding:'10px 28px',background:ORANGE,color:'#fff',border:'none',borderRadius:12,fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Jogar Novamente</button></div>)
-      :(<button onClick={reset} style={{padding:'8px 20px',background:'none',border:'1.5px solid var(--t-border)',borderRadius:10,fontSize:13,cursor:'pointer',fontFamily:'inherit',color:'var(--t-text)'}}>↺ Reiniciar</button>)}
-      <p style={{fontSize:11,color:'var(--t-muted)',marginTop:8}}>Arraste as peças para o tabuleiro · Complete linhas para pontuar</p>
+      {lost&&<div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.7)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',zIndex:10,borderRadius:14}}><p style={{fontSize:20,fontWeight:800,color:'#fff',marginBottom:16}}>😢 Que Pena, Você Perdeu!</p><button onClick={reset} style={{padding:'12px 32px',background:ORANGE,color:'#fff',border:'none',borderRadius:12,fontSize:15,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>Jogar Novamente</button></div>}
     </div>
   )
 }
