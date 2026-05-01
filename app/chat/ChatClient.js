@@ -287,6 +287,21 @@ function KnowMydowModal({ onClose, t }) {
 
 // ─────────────────────────── PLANS MODAL ─────────────────────────
 function PlansModal({ user, onClose }) {
+  const [loading, setLoading] = useState(null)
+
+  async function handleUpgrade(planKey) {
+    setLoading(planKey)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, plan: planKey, userEmail: user.email }),
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+    } catch { }
+    setLoading(null)
+  }
   const plans = [
     {
       key: 'free', name: 'Gratuito', desc: 'Mydow Básico', price: null,
@@ -322,10 +337,12 @@ function PlansModal({ user, onClose }) {
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {plan.features.map(f => <li key={f} style={{ fontSize: 13, color: 'var(--t-muted)', display: 'flex', gap: 8, alignItems: 'flex-start' }}><span style={{ color: ORANGE, fontWeight: 700, flexShrink: 0 }}>✓</span>{f}</li>)}
                 </ul>
-                {plan.price ? (
-                  <button style={{ width: '100%', padding: 12, background: ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>{plan.price}</button>
+                {plan.price && !isCurrent ? (
+                  <button onClick={() => handleUpgrade(plan.key)} disabled={!!loading} style={{ width: '100%', padding: 12, background: loading === plan.key ? '#aaa' : ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: loading ? 'wait' : 'pointer', fontFamily: 'inherit' }}>
+                    {loading === plan.key ? 'Aguarde...' : `Assinar ${plan.name}`}
+                  </button>
                 ) : (
-                  <div style={{ width: '100%', padding: 12, textAlign: 'center', fontSize: 14, color: 'var(--t-muted)', fontWeight: 600 }}>Plano atual</div>
+                  <div style={{ width: '100%', padding: 12, textAlign: 'center', fontSize: 14, color: 'var(--t-muted)', fontWeight: 600 }}>{isCurrent ? 'Plano atual' : 'Gratuito'}</div>
                 )}
               </div>
             )
