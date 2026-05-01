@@ -219,9 +219,11 @@ function SnakeGame() {
       if(!running&&!dead)setRunning(true)
       touchStart.current=null
     }
+    const tm=(e)=>{if(running)e.preventDefault()}
     window.addEventListener('touchstart',ts,{passive:true})
     window.addEventListener('touchend',te)
-    return()=>{window.removeEventListener('touchstart',ts);window.removeEventListener('touchend',te)}
+    window.addEventListener('touchmove',tm,{passive:false})
+    return()=>{window.removeEventListener('touchstart',ts);window.removeEventListener('touchend',te);window.removeEventListener('touchmove',tm)}
   },[running,dead])
   useEffect(()=>{
     if(!running)return
