@@ -808,17 +808,19 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
 // ─────────────────────────── CHAT INPUT ──────────────────────────
 function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
   const [value, setValue] = useState('')
+  const [pendingFile, setPendingFile] = useState(null)
   const textareaRef = useRef(null)
   const fileRef = useRef(null)
 
   const handleSend = () => {
     const text = value.trim()
-    if (!text || disabled) return
-    onSend(text)
+    if ((!text && !pendingFile) || disabled) return
+    if (pendingFile) { onFileSelect?.(pendingFile); setPendingFile(null) }
+    if (text) onSend(text)
     setValue('')
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
   }
-  const handleKeyDown = (e) => { if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); handleSend() } }
+  const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }
   const handleInput = (e) => {
     setValue(e.target.value)
     const ta = textareaRef.current
@@ -829,7 +831,7 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
     const file = e.target.files?.[0]
     if (!file) return
     e.target.value = ''
-    onFileSelect?.(file)
+    setPendingFile(file)
   }
 
   return (
@@ -837,6 +839,12 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', background: 'var(--t-input)', border: `1.5px solid var(--t-border)`, borderRadius: 18, padding: '8px 12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
         <button onClick={() => fileRef.current?.click()} title="Enviar arquivo" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '4px 2px', color: 'var(--t-muted)', flexShrink: 0, lineHeight: 1 }}>📎</button>
         <input ref={fileRef} type="file" accept="image/*,.pdf,.doc,.docx,.txt,.md" onChange={handleFile} style={{ display: 'none' }} />
+        {pendingFile && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', background: 'var(--t-card)', borderRadius: 8, fontSize: 12, color: 'var(--t-text)', flexShrink: 0 }}>
+            <span>📎 {pendingFile.name}</span>
+            <button onClick={() => setPendingFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t-muted)', fontSize: 14, lineHeight: 1 }}>✕</button>
+          </div>
+        )}
         <textarea ref={textareaRef} value={value} onChange={handleInput} onKeyDown={handleKeyDown} disabled={disabled} placeholder={disabled ? 'Limite atingido' : placeholder} rows={1}
           style={{ flex: 1, border: 'none', outline: 'none', resize: 'none', fontSize: 14, fontFamily: 'inherit', color: 'var(--t-text)', background: 'transparent', lineHeight: 1.5, maxHeight: 120, overflow: 'hidden' }} />
         <button onClick={handleSend} disabled={disabled || !value.trim()}
