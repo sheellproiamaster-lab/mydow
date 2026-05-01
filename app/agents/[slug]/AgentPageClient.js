@@ -588,7 +588,7 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
 
       // Salva mensagem do usuário
       if (currentConvId) {
-        await fetch('/api/conversation/create', {
+        await fetch('/api/message/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ conversationId: currentConvId, role: 'user', content: msg }),
