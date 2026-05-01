@@ -769,11 +769,18 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
   const isUser = msg.role === 'user'
   const parts = isUser ? [{ type: 'text', content: msg.content }] : parseResponse(msg.content)
 
-  const handleDownloadDoc = (content) => {
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a'); a.href = url; a.download = 'mydow-documento.md'; a.click()
-    URL.revokeObjectURL(url)
+  const handleDownloadDoc = async (content) => {
+    const { jsPDF } = await import('jspdf')
+    const doc = new jsPDF()
+    const lines = doc.splitTextToSize(content.replace(/[#*`]/g, ''), 180)
+    let y = 20
+    lines.forEach(line => {
+      if (y > 280) { doc.addPage(); y = 20 }
+      doc.setFontSize(line.startsWith('  ') ? 11 : 12)
+      doc.text(line, 15, y)
+      y += 7
+    })
+    doc.save('mydow-documento.pdf')
   }
 
   return (
