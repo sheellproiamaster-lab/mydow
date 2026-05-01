@@ -73,12 +73,14 @@ export async function POST(request) {
       controller.close()
 
       if (!skipLimit) {
-        const { data: mc } = await supabase.from('message_counts').select('count, reset_at').eq('user_id', userId).single().catch(() => ({ data: null }))
-        if (mc) {
-          const newCount = Math.min(limit, mc.count + 1)
-          const resetAt = newCount >= limit && !mc.reset_at ? new Date(Date.now() + 7 * 3600 * 1000).toISOString() : mc.reset_at
-          await supabase.from('message_counts').update({ count: newCount, reset_at: resetAt }).eq('user_id', userId).catch(() => {})
-        }
+        try {
+          const { data: mc } = await supabase.from('message_counts').select('count, reset_at').eq('user_id', userId).single()
+          if (mc) {
+            const newCount = Math.min(limit, mc.count + 1)
+            const resetAt = newCount >= limit && !mc.reset_at ? new Date(Date.now() + 7 * 3600 * 1000).toISOString() : mc.reset_at
+            await supabase.from('message_counts').update({ count: newCount, reset_at: resetAt }).eq('user_id', userId)
+          }
+        } catch {}
       }
     },
   })
