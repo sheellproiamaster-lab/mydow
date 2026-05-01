@@ -642,11 +642,12 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
               </div>
             </div>
           ))}
-          {isStreaming && !messages[messages.length - 1]?.content && (
+          {isStreaming && (
             <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
-              <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${meta.accentColor}22`, border: `2px solid ${meta.accentColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>{meta.icon}</div>
-              <div style={{ background: 'var(--t-msg-ai-bg)', borderRadius: '4px 18px 18px 18px', padding: '12px 16px', display: 'flex', gap: 4, alignItems: 'center' }}>
-                {[0,1,2].map(j => <span key={j} style={{ width: 6, height: 6, background: meta.accentColor, borderRadius: '50%', display: 'inline-block', animation: `dp 1.2s ${j*0.2}s ease-in-out infinite` }} />)}
+              <div style={{ width: 30, height: 30, borderRadius: '50%', background: `${meta.accentColor}22`, border: `2px solid ${meta.accentColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>{meta.icon}</div>
+              <div style={{ background: 'var(--t-msg-ai-bg)', borderRadius: '4px 18px 18px 18px', padding: '12px 16px', display: 'flex', gap: 6, alignItems: 'center' }}>
+                <span style={{ fontSize: 13, color: 'var(--t-muted)' }}>Mydow está executando</span>
+                {[0,1,2].map(j => <span key={j} style={{ width: 5, height: 5, background: meta.accentColor, borderRadius: '50%', display: 'inline-block', animation: `dp 1.2s ${j*0.2}s ease-in-out infinite`, marginLeft: 2 }} />)}
               </div>
             </div>
           )}
@@ -663,7 +664,7 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', background: 'var(--t-input)', border: '1.5px solid var(--t-border)', borderRadius: 18, padding: '8px 12px' }}>
           <textarea ref={textareaRef} value={input}
             onChange={e => { setInput(e.target.value); const ta = e.target; ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 120) + 'px' }}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
+            onKeyDown={e => { if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); handleSend() } }}
             disabled={isLimited || isStreaming} placeholder={isLimited ? 'Limite atingido' : `Fale com ${meta.name}...`} rows={1}
             style={{ flex: 1, border: 'none', outline: 'none', resize: 'none', fontSize: 14, fontFamily: 'inherit', color: 'var(--t-text)', background: 'transparent', lineHeight: 1.5, maxHeight: 120 }}
           />
@@ -706,12 +707,7 @@ export default function AgentPageClient({ slug, user, messageCount, memory }) {
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--t-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{meta.name}</div>
           <div style={{ fontSize: 11, color: 'var(--t-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{meta.tags}</div>
         </div>
-        {user.plan !== 'pro' && (
-          <div style={{ fontSize: 12, color: 'var(--t-muted)', fontWeight: 600, flexShrink: 0 }}>
-            {Math.max(0, limit - (messageCount?.count ?? 0))}<span style={{ opacity: 0.5 }}>/{limit}</span>
-          </div>
-        )}
-        <img src="/images/mydow.png" alt="Mydow" style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />
+                <img src="/images/mydow.png" alt="Mydow" style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0 }} />
       </div>
 
       {CHAT_AGENTS.includes(slug) && <AgentChatUI slug={slug} meta={meta} user={user} messageCount={messageCount} memory={memory} />}
