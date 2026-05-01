@@ -342,7 +342,7 @@ function PlansModal({ user, onClose }) {
                     {loading === plan.key ? 'Aguarde...' : `Assinar ${plan.name}`}
                   </button>
                 ) : (
-                  <div style={{ width: '100%', padding: 12, textAlign: 'center', fontSize: 13, color: ORANGE, fontWeight: 700, background: 'rgba(224,123,42,0.08)', borderRadius: 10 }}>✨ Melhore Ainda Mais o seu Mydow</div>
+                  <div style={{ width: '100%', padding: 12, textAlign: 'center', fontSize: 13, color: ORANGE, fontWeight: 700, background: 'rgba(224,123,42,0.08)', borderRadius: 10 }}> Assine um PLano Mensal e use muito mais o Mydow</div>
                 )}
               </div>
             )
