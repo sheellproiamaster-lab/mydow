@@ -1235,10 +1235,19 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
 
       // Finalize message — detect [DOC] tag for downloadable document
       if (full.includes('[DOC]')) {
-        const docContent = full.split('[DOC]')[1]?.replace(/```markdown|```/g, '').trim() || full
+        const rawDoc = full.split('[DOC]')[1] || ''
+        const docContent = rawDoc
+          .replace(/```markdown|```/g, '')
+          .replace(/\[PDF gerado[\s\S]*$/i, '')
+          .replace(/Agora,? vou gerar[\s\S]*$/i, '')
+          .replace(/Você pode baixar[\s\S]*$/i, '')
+          .replace(/Criado por Michel Macedo[\s\S]*$/i, '')
+          .replace(/---\s*$/m, '')
+          .trim()
+        const preview = full.split('[DOC]')[0].replace(/```markdown|```/g,'').trim().slice(0, 300)
         setMessages(prev => prev.map(m => m.id === assistantId ? {
           ...m,
-          content: '📄 Documento gerado! Clique abaixo para baixar.',
+          content: preview || '📄 Documento gerado com sucesso!',
           docContent,
           streaming: false,
         } : m))
