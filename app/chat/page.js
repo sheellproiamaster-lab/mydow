@@ -3,6 +3,8 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import ChatClient from './ChatClient'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ChatPage() {
   // Auth via server client (reads session cookie)
   const supabase = createClient()
