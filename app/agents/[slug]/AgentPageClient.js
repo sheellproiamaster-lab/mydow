@@ -378,7 +378,7 @@ function GamesUI() {
 }
 
 // ── TRADUTOR UI ───────────────────────────────────────────────────
-// function TradutorUI({ user }) {
+function TradutorUI({ user }) {
   const [fromLang, setFromLang] = useState('pt')
   const [toLang, setToLang] = useState('en')
   const [inputText, setInputText] = useState('')
