@@ -26,14 +26,20 @@ export async function POST(request) {
   const langNames = { pt: 'português', en: 'inglês', es: 'espanhol' }
   const langStr = langNames[language] || 'português'
 
+  const formatInstructions = {
+    pdf: 'Formate em Markdown com títulos (#), subtítulos (##) e listas (-).',
+    docx: 'Formate em Markdown com títulos (#), subtítulos (##), listas (-) e parágrafos bem estruturados.',
+    xlsx: 'Retorne APENAS um JSON válido com a estrutura: { "title": "string", "sheets": [{ "name": "string", "headers": ["col1","col2",...], "rows": [["val1","val2",...], ...] }] }. Nada além do JSON.',
+  }
+
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [{
       role: 'user',
       content: `Crie um documento completo e profissional sobre: ${prompt}. 
-      Formate em Markdown com títulos, subtítulos, parágrafos bem estruturados.
+      ${formatInstructions[format] || formatInstructions.pdf}
       Seja detalhado e completo. Responda em ${langStr}.
-      Comece direto com o conteúdo do documento.`
+      Comece direto com o conteúdo.`
     }],
     max_tokens: 2000,
   })
