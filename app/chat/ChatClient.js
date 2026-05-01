@@ -769,7 +769,60 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
   const isUser = msg.role === 'user'
   const parts = isUser ? [{ type: 'text', content: msg.content }] : parseResponse(msg.content)
 
-  const handleDownloadDoc = async (content) => {
+  const handleDownloadDoc = async (content, format = 'pdf') => {
+    if (format === 'docx') {
+      const { Document, Packer, Paragraph, TextRun, HeadingLevel } = await import('docx')
+      const children = []
+      content.split('\n').forEach(line => {
+        const clean = line.replace(/[`]/g, '').trim()
+        if (!clean) { children.push(new Paragraph('')); return }
+        if (line.startsWith('# ')) {
+          children.push(new Paragraph({ text: clean.replace(/^#+ /, ''), heading: HeadingLevel.HEADING_1 }))
+        } else if (line.startsWith('## ')) {
+          children.push(new Paragraph({ text: clean.replace(/^#+ /, ''), heading: HeadingLevel.HEADING_2 }))
+        } else if (line.startsWith('### ')) {
+          children.push(new Paragraph({ text: clean.replace(/^#+ /, ''), heading: HeadingLevel.HEADING_3 }))
+        } else if (line.trim().startsWith('- ') || line.trim().match(/^\d+\./)) {
+          const txt = clean.replace(/^[-•]\s*/, '').replace(/^\d+\.\s*/, '').replace(/\*\*/g, '')
+          children.push(new Paragraph({ text: txt, bullet: { level: 0 } }))
+        } else {
+          const boldParts = clean.split(/\*\*(.*?)\*\*/g)
+          const runs = boldParts.map((p, i) => new TextRun({ text: p, bold: i % 2 === 1 }))
+          children.push(new Paragraph({ children: runs }))
+        }
+      })
+      children.push(new Paragraph(''))
+      children.push(new Paragraph({ children: [new TextRun({ text: `Criado por Michel Macedo · Mydow Platform · ${new Date().toLocaleDateString('pt-BR')}`, italics: true, color: '888888', size: 18 })] }))
+      const doc = new Document({ sections: [{ children }] })
+      const blob = await Packer.toBlob(doc)
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = 'mydow-documento.docx'; a.click()
+      URL.revokeObjectURL(url)
+      return
+    }
+
+    if (format === 'xlsx') {
+      const XLSX = await import('xlsx')
+      let parsed
+      try {
+        const jsonStr = content.replace(/```json|```/g, '').trim()
+        parsed = JSON.parse(jsonStr)
+      } catch { parsed = null }
+      const wb = XLSX.utils.book_new()
+      if (parsed?.sheets) {
+        parsed.sheets.forEach(sheet => {
+          const ws = XLSX.utils.aoa_to_sheet([sheet.headers, ...sheet.rows])
+          XLSX.utils.book_append_sheet(wb, ws, sheet.name || 'Planilha')
+        })
+      } else {
+        const lines = content.split('\n').filter(l => l.trim())
+        const rows = lines.map(l => [l.replace(/[#*`]/g, '').trim()])
+        const ws = XLSX.utils.aoa_to_sheet(rows)
+        XLSX.utils.book_append_sheet(wb, ws, 'Dados')
+      }
+      XLSX.writeFile(wb, 'mydow-planilha.xlsx')
+      return
+    }
     const { jsPDF } = await import('jspdf')
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
     const W = doc.internal.pageSize.getWidth()
@@ -881,9 +934,11 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
             return null
           })}
           {msg.docContent && (
-            <button onClick={() => handleDownloadDoc(msg.docContent)} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '8px 14px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-              ⬇ Download do Documento
-            </button>
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+              <button onClick={() => handleDownloadDoc(msg.docContent, 'pdf')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇ PDF</button>
+              <button onClick={() => handleDownloadDoc(msg.docContent, 'docx')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', background: '#2b5797', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇ Word</button>
+              <button onClick={() => handleDownloadDoc(msg.docContent, 'xlsx')} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', background: '#1e7145', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>⬇ Excel</button>
+            </div>
           )}
         </div>
         {!isUser && !msg.streaming && (
