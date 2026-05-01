@@ -20,7 +20,7 @@ export async function POST(request) {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
   const supabase = getSupabaseAdmin()
 
-  const { messages, userId, userName, memory, userPlan = 'free', agentSlug, language = 'pt' } = await request.json()
+  const { messages, userId, userName, memory, userPlan = 'free', agentSlug, language = 'pt', conversationId } = await request.json()
   if (!userId) return new Response('Unauthorized', { status: 401 })
 
   const limit = PLAN_LIMITS[userPlan] || 20
@@ -41,10 +41,10 @@ export async function POST(request) {
     }
   }
 
-  const langStr = LANG_NAMES[language] || 'português'
+  const langStr = 'português'
   const memStr = [memory?.field1, memory?.field2, memory?.field3].filter(Boolean).join(' | ') || 'nenhuma'
   const basePrompt = SYSTEM_PROMPTS[agentSlug] || 'Você é o Mydow, um agente criado pela Michel Macedo Holding.'
-  const systemPrompt = `${basePrompt} Chame o usuário SEMPRE pelo nome: ${userName || 'usuário'}. RESPONDA SEMPRE EM ${langStr.toUpperCase()}. MEMÓRIA DO USUÁRIO: ${memStr}`
+  const systemPrompt = `${basePrompt} Chame o usuário SEMPRE pelo nome: ${userName || 'usuário'}. RESPONDA SEMPRE EM PORTUGUÊS. MEMÓRIA DO USUÁRIO: ${memStr}`
 
   const openaiMsgs = [
     { role: 'system', content: systemPrompt },
@@ -63,14 +63,20 @@ export async function POST(request) {
           max_tokens: 600,
           temperature: 0.5,
         })
+        let fullResponse = ''
         for await (const chunk of completion) {
           const text = chunk.choices[0]?.delta?.content || ''
-          if (text) controller.enqueue(encoder.encode(text))
+          if (text) { fullResponse += text; controller.enqueue(encoder.encode(text)) }
         }
       } catch {
         controller.enqueue(encoder.encode('Erro ao processar. Tente novamente.'))
       }
       controller.close()
+
+      if (conversationId && fullResponse) {
+        await supabase.from('messages').insert({ conversation_id: conversationId, role: 'assistant', content: fullResponse }).catch(() => {})
+        await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId).catch(() => {})
+      }
 
       if (!skipLimit) {
         try {
