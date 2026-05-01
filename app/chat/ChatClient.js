@@ -645,7 +645,7 @@ function SideMenu({ open, onToggle, user, conversations, msgCount, anyModalOpen,
   return (
     <>
       {/* BUG 5 FIX: 50vw, no maxWidth */}
-      <div ref={menuRef} style={{ position: 'fixed', top: 0, left: 0, height: '100dvh', width: '50vw', background: 'var(--t-side)', zIndex: 60, transform: open ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform 0.3s ease', boxShadow: open ? '4px 0 30px rgba(0,0,0,0.2)' : 'none', display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRight: '1px solid var(--t-border)' }}>
+      <div ref={menuRef} style={{ position: 'fixed', top: 0, left: 0, height: '100dvh', width: 'min(70vw, 320px)', background: 'var(--t-side)', zIndex: 60, transform: open ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform 0.3s ease', boxShadow: open ? '4px 0 30px rgba(0,0,0,0.2)' : 'none', display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRight: '1px solid var(--t-border)' }}>
 
         {/* Header with close button (BUG 4: close via toggle only) */}
         <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid var(--t-divider)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
