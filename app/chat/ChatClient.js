@@ -771,16 +771,88 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
 
   const handleDownloadDoc = async (content) => {
     const { jsPDF } = await import('jspdf')
-    const doc = new jsPDF()
-    const lines = doc.splitTextToSize(content.replace(/[#*`]/g, ''), 180)
-    let y = 20
-    lines.forEach(line => {
-      if (y > 280) { doc.addPage(); y = 20 }
-      doc.setFontSize(line.startsWith('  ') ? 11 : 12)
-      doc.text(line, 15, y)
-      y += 7
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+    const W = doc.internal.pageSize.getWidth()
+    const H = doc.internal.pageSize.getHeight()
+
+    // Capa
+    doc.setFillColor(224, 123, 42)
+    doc.rect(0, 0, W, 55, 'F')
+    doc.setFillColor(180, 90, 20)
+    doc.rect(0, 48, W, 7, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(22)
+    doc.setFont('helvetica', 'bold')
+    const lines0 = content.split('\n')
+    const title = lines0[0]?.replace(/[#*`]/g, '').trim() || 'Documento Mydow'
+    const titleLines = doc.splitTextToSize(title, W - 30)
+    doc.text(titleLines, W / 2, 28, { align: 'center' })
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Gerado por Mydow · Michel Macedo Holding', W / 2, 44, { align: 'center' })
+
+    // Linha laranja lateral
+    doc.setFillColor(224, 123, 42)
+    doc.rect(0, 55, 4, H - 55, 'F')
+
+    // Conteúdo
+    doc.setTextColor(30, 30, 30)
+    let y = 68
+    const bodyLines = lines0.slice(1)
+    bodyLines.forEach(line => {
+      const clean = line.replace(/[`]/g, '').trim()
+      if (!clean) { y += 4; return }
+      const isH2 = line.startsWith('## ') || line.startsWith('**') && line.endsWith('**')
+      const isH1 = line.startsWith('# ')
+      const isBullet = line.trim().startsWith('- ') || line.trim().match(/^\d+\./)
+      if (isH1) {
+        if (y > H - 30) { doc.addPage(); y = 20; doc.setFillColor(224,123,42); doc.rect(0,0,4,H,'F') }
+        doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(224, 123, 42)
+        const t = doc.splitTextToSize(clean.replace(/^#+\s*/, ''), W - 30)
+        doc.text(t, 12, y); y += t.length * 8 + 3
+        doc.setDrawColor(224,123,42); doc.setLineWidth(0.4); doc.line(12, y - 1, W - 12, y - 1); y += 2
+      } else if (isH2) {
+        if (y > H - 30) { doc.addPage(); y = 20; doc.setFillColor(224,123,42); doc.rect(0,0,4,H,'F') }
+        doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(60, 60, 60)
+        const t = doc.splitTextToSize(clean.replace(/^\*\*|\*\*$/g, '').replace(/^#+\s*/, ''), W - 30)
+        doc.text(t, 12, y); y += t.length * 7 + 2
+      } else if (isBullet) {
+        if (y > H - 30) { doc.addPage(); y = 20; doc.setFillColor(224,123,42); doc.rect(0,0,4,H,'F') }
+        doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50)
+        const bulletText = clean.replace(/^[-•]\s*/, '').replace(/^\d+\.\s*/, '')
+        const boldMatch = bulletText.match(/^\*\*(.*?)\*\*(.*)/)
+        if (boldMatch) {
+          doc.setFillColor(224,123,42); doc.circle(17, y - 2, 1.2, 'F')
+          doc.setFont('helvetica', 'bold'); doc.text(boldMatch[1], 21, y)
+          const bw = doc.getTextWidth(boldMatch[1])
+          doc.setFont('helvetica', 'normal'); doc.text(boldMatch[2], 21 + bw, y)
+        } else {
+          doc.setFillColor(224,123,42); doc.circle(17, y - 2, 1.2, 'F')
+          const t = doc.splitTextToSize(bulletText.replace(/\*\*/g,''), W - 35)
+          doc.text(t, 21, y); y += (t.length - 1) * 6
+        }
+        y += 7
+      } else {
+        if (y > H - 30) { doc.addPage(); y = 20; doc.setFillColor(224,123,42); doc.rect(0,0,4,H,'F') }
+        doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50)
+        const t = doc.splitTextToSize(clean.replace(/\*\*/g,''), W - 25)
+        doc.text(t, 12, y); y += t.length * 6 + 2
+      }
     })
-    doc.save('mydow-documento.pdf')
+
+    // Rodapé em todas as páginas
+    const total = doc.internal.getNumberOfPages()
+    for (let i = 1; i <= total; i++) {
+      doc.setPage(i)
+      doc.setFillColor(245, 245, 245)
+      doc.rect(0, H - 12, W, 12, 'F')
+      doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(150, 150, 150)
+      doc.text(`Criado por Michel Macedo · Mydow Platform · ${new Date().toLocaleDateString('pt-BR')}`, W / 2, H - 5, { align: 'center' })
+      doc.text(`${i}/${total}`, W - 12, H - 5)
+    }
+
+    const safeName = title.replace(/[^a-zA-Z0-9\s]/g, '').trim().slice(0, 40) || 'mydow-documento'
+    doc.save(`${safeName}.pdf`)
   }
 
   return (
