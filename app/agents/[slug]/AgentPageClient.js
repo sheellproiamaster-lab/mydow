@@ -698,7 +698,7 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', background: 'var(--t-input)', border: '1.5px solid var(--t-border)', borderRadius: 18, padding: '8px 12px' }}>
           <textarea ref={textareaRef} value={input}
             onChange={e => { setInput(e.target.value); const ta = e.target; ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 120) + 'px' }}
-            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
+            onKeyDown={e => { if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); handleSend() } }}
             disabled={isLimited || isStreaming} placeholder={isLimited ? 'Limite atingido' : `Fale com ${meta.name}...`} rows={1}
             style={{ flex: 1, border: 'none', outline: 'none', resize: 'none', fontSize: 14, fontFamily: 'inherit', color: 'var(--t-text)', background: 'transparent', lineHeight: 1.5, maxHeight: 120 }}
           />
