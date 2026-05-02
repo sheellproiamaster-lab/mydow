@@ -12,8 +12,16 @@ export async function POST(request) {
     admin.from('conversations').select('id, title, is_favorite, updated_at').eq('user_id', userId).order('updated_at', { ascending: false }),
   ])
 
+  let msgCount = mcRes.data || { count: 0, reset_at: null }
+
+  // Reset automático quando o cronômetro vence
+  if (msgCount.reset_at && new Date() > new Date(msgCount.reset_at)) {
+    await admin.from('message_counts').update({ count: 0, reset_at: null }).eq('user_id', userId)
+    msgCount = { count: 0, reset_at: null }
+  }
+
   return Response.json({
-    msgCount: mcRes.data || { count: 0, reset_at: null },
+    msgCount,
     conversations: convsRes.data || [],
   })
 }
