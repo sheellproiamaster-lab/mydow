@@ -998,11 +998,7 @@ function AgentChatUI({ slug, meta, user, messageCount, memory }) {
         const ra = nc >= lim && !prev.reset_at ? new Date(Date.now() + 7 * 3600000).toISOString() : prev.reset_at
         return { ...prev, count: nc, reset_at: ra }
       })
-      await fetch('/api/message-count/increment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id }),
-      }).catch(() => {})
+      // contagem já feita no servidor via /api/agents/chat
     } catch {
       setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao conectar. Tente novamente.', streaming: false } : m))
     }
