@@ -34,14 +34,23 @@ export async function POST(request) {
 
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o',
-    messages: [{
-      role: 'user',
-      content: `Crie um documento completo e profissional sobre: ${prompt}. 
-      ${formatInstructions[format] || formatInstructions.pdf}
-      Seja detalhado e completo. Responda em ${langStr}.
-      Comece direto com o conteúdo.`
-    }],
-    max_tokens: 2000,
+    messages: [
+      {
+        role: 'system',
+        content: `Você é um especialista em criação de documentos profissionais. Crie documentos completos, detalhados e bem estruturados. NUNCA inclua rodapés, assinaturas, "criado por", datas ou qualquer referência a quem criou o documento. Responda sempre em ${langStr}.`,
+      },
+      {
+        role: 'user',
+        content: `Crie um documento completo e extremamente detalhado sobre: ${prompt}.
+${formatInstructions[format] || formatInstructions.pdf}
+Regras obrigatórias:
+- Seja muito detalhado, com no mínimo 6 seções completas
+- Cada seção deve ter pelo menos 3 parágrafos ou 5 itens
+- NUNCA inclua rodapé, assinatura, "criado por", data ou qualquer texto que não seja conteúdo do documento
+- Comece direto com o título e conteúdo`,
+      }
+    ],
+    max_tokens: 4000,
   })
 
   const content = completion.choices[0]?.message?.content || ''
