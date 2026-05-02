@@ -1377,6 +1377,7 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
         const rawDoc = full.split('[DOC]')[1] || ''
         const docContent = rawDoc
           .replace(/```markdown|```/g, '')
+          .replace(/\[DOC\]/g, '')
           .replace(/\[PDF gerado[\s\S]*$/i, '')
           .replace(/Agora,? vou gerar[\s\S]*$/i, '')
           .replace(/Você pode baixar[\s\S]*$/i, '')
