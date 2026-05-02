@@ -769,7 +769,6 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
   const isUser = msg.role === 'user'
   const parts = isUser ? [{ type: 'text', content: msg.content }] : parseResponse(msg.content)
   const [fullscreenImg, setFullscreenImg] = useState(null)
-  const [fullscreenImg, setFullscreenImg] = useState(null)
 
   const handleDownloadDoc = async (content, format = 'pdf') => {
     if (format === 'docx') {
