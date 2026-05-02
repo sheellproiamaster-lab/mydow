@@ -792,7 +792,7 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
         }
       })
       children.push(new Paragraph(''))
-      children.push(new Paragraph({ children: [new TextRun({ text: `Criado por Michel Macedo · Mydow Platform · ${new Date().toLocaleDateString('pt-BR')}`, italics: true, color: '888888', size: 18 })] }))
+      // sem rodapé
       const doc = new Document({ sections: [{ children }] })
       const blob = await Packer.toBlob(doc)
       const url = URL.createObjectURL(blob)
@@ -893,16 +893,7 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
       }
     })
 
-    // Rodapé em todas as páginas
-    const total = doc.internal.getNumberOfPages()
-    for (let i = 1; i <= total; i++) {
-      doc.setPage(i)
-      doc.setFillColor(245, 245, 245)
-      doc.rect(0, H - 12, W, 12, 'F')
-      doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(150, 150, 150)
-      doc.text(`Criado por Michel Macedo · Mydow Platform · ${new Date().toLocaleDateString('pt-BR')}`, W / 2, H - 5, { align: 'center' })
-      doc.text(`${i}/${total}`, W - 12, H - 5)
-    }
+    // sem rodapé
 
     const safeName = title.replace(/[^a-zA-Z0-9\s]/g, '').trim().slice(0, 40) || 'mydow-documento'
     doc.save(`${safeName}.pdf`)
@@ -1287,6 +1278,60 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
         setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: full } : m))
       }
 
+      // Detecta geração de imagem
+      if (full.includes('[IMAGE_REQUEST]')) {
+        const imagePrompt = full.split('[IMAGE_REQUEST]')[1]?.trim() || text
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: '🎨 Gerando imagem...', streaming: false } : m))
+        try {
+          const imgRes = await fetch('/api/image/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: imagePrompt, userId: user.id, userPlan: user.plan }),
+          })
+          if (imgRes.status === 429) {
+            setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Limite de geração de imagens atingido. Faça upgrade para continuar.' } : m))
+          } else {
+            const imgData = await imgRes.json()
+            if (imgData.url) {
+              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: `[MYDOW_IMAGE:${imgData.url}]` } : m))
+            } else {
+              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao gerar imagem. Tente novamente.' } : m))
+            }
+          }
+        } catch {
+          setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao gerar imagem.' } : m))
+        }
+        setIsStreaming(false)
+        return
+      }
+
+      // Detecta geração de imagem
+      if (full.includes('[IMAGE_REQUEST]')) {
+        const imagePrompt = full.split('[IMAGE_REQUEST]')[1]?.trim() || text
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: '🎨 Gerando imagem...', streaming: false } : m))
+        try {
+          const imgRes = await fetch('/api/image/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: imagePrompt, userId: user.id, userPlan: user.plan }),
+          })
+          if (imgRes.status === 429) {
+            setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Limite de geração de imagens atingido. Faça upgrade para continuar.' } : m))
+          } else {
+            const imgData = await imgRes.json()
+            if (imgData.url) {
+              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: `[MYDOW_IMAGE:${imgData.url}]` } : m))
+            } else {
+              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao gerar imagem. Tente novamente.' } : m))
+            }
+          }
+        } catch {
+          setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao gerar imagem.' } : m))
+        }
+        setIsStreaming(false)
+        return
+      }
+
       // Finalize message — detect [DOC] tag for downloadable document
       if (full.includes('[DOC]')) {
         const rawDoc = full.split('[DOC]')[1] || ''
@@ -1295,10 +1340,13 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
           .replace(/\[PDF gerado[\s\S]*$/i, '')
           .replace(/Agora,? vou gerar[\s\S]*$/i, '')
           .replace(/Você pode baixar[\s\S]*$/i, '')
-          .replace(/Criado por Michel Macedo[\s\S]*$/i, '')
+          .replace(/Criado por[\s\S]*$/i, '')
+          .replace(/Gerado por[\s\S]*$/i, '')
+          .replace(/Espero que[\s\S]*$/i, '')
+          .replace(/\*Criado[\s\S]*$/i, '')
           .replace(/---\s*$/m, '')
           .trim()
-        const preview = full.split('[DOC]')[0].replace(/```markdown|```/g,'').trim().slice(0, 300)
+        const preview = ''
         const tl = text.toLowerCase()
         const docFormat = tl.includes('word') || tl.includes('docx') ? 'docx' : tl.includes('planilha') || tl.includes('excel') || tl.includes('xlsx') ? 'xlsx' : 'pdf'
         setMessages(prev => prev.map(m => m.id === assistantId ? {
