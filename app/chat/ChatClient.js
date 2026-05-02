@@ -1481,6 +1481,8 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
     try {
       const isImage = file.type.startsWith('image/')
       const isText = file.type === 'text/plain' || file.name.endsWith('.md') || file.name.endsWith('.txt')
+      const isPDF = file.type === 'application/pdf' || file.name.endsWith('.pdf')
+      const isDocx = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.name.endsWith('.docx')
 
       let fileBase64 = null
       let fileText = null
@@ -1494,6 +1496,18 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
         })
       } else if (isText) {
         fileText = await file.text()
+      } else if (isPDF) {
+        fileBase64 = await new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result.split(',')[1])
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+      } else if (isDocx) {
+        const mammoth = await import('mammoth')
+        const arrayBuffer = await file.arrayBuffer()
+        const result = await mammoth.extractRawText({ arrayBuffer })
+        fileText = result.value
       }
 
       const res = await fetch('/api/document/analyze', {
