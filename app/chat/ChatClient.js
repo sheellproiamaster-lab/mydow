@@ -962,7 +962,7 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
   }
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
+    if (e.key === 'Enter' && e.shiftKey) { e.preventDefault() }
   }
   const handleInput = (e) => {
     setValue(e.target.value)
@@ -1278,33 +1278,6 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
         if (done) break
         full += decoder.decode(value, { stream: true })
         setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: full } : m))
-      }
-
-      // Detecta geração de imagem
-      if (full.includes('[IMAGE_REQUEST]')) {
-        const imagePrompt = full.split('[IMAGE_REQUEST]')[1]?.trim() || text
-        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: '🎨 Gerando imagem...', streaming: false } : m))
-        try {
-          const imgRes = await fetch('/api/image/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: imagePrompt, userId: user.id, userPlan: user.plan }),
-          })
-          if (imgRes.status === 429) {
-            setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Limite de geração de imagens atingido. Faça upgrade para continuar.' } : m))
-          } else {
-            const imgData = await imgRes.json()
-            if (imgData.url) {
-              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: `[MYDOW_IMAGE:${imgData.url}]` } : m))
-            } else {
-              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao gerar imagem. Tente novamente.' } : m))
-            }
-          }
-        } catch {
-          setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao gerar imagem.' } : m))
-        }
-        setIsStreaming(false)
-        return
       }
 
       // Detecta geração de imagem
