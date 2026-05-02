@@ -1348,6 +1348,11 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
             const imgData = await imgRes.json()
             if (imgData.url) {
               setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: `[MYDOW_IMAGE:${imgData.url}]` } : m))
+              await fetch('/api/message/update-metadata', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ conversationId: convId, content: `[MYDOW_IMAGE:${imgData.url}]`, metadata: { type: 'image', url: imgData.url } }),
+              }).catch(() => {})
             } else {
               setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: 'Erro ao gerar imagem. Tente novamente.' } : m))
             }
