@@ -1030,7 +1030,7 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
       )}
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', background: 'var(--t-input)', border: `1.5px solid var(--t-border)`, borderRadius: 18, padding: '8px 12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
         <button onClick={() => fileRef.current?.click()} title="Enviar arquivo" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '4px 2px', color: 'var(--t-muted)', flexShrink: 0, lineHeight: 1 }}>📎</button>
-        <input ref={fileRef} type="file" accept="image/*,.pdf,.doc,.docx,.txt,.md" onChange={handleFile} style={{ display: 'none' }} />
+        <input ref={fileRef} type="file" accept="image/*,.pdf,.doc,.docx,.txt,.md,.csv,.xlsx,.xls,.pptx" onChange={handleFile} style={{ display: 'none' }} />
                 <textarea ref={textareaRef} value={value} onChange={handleInput} onKeyDown={handleKeyDown} disabled={disabled} placeholder={disabled ? 'Limite atingido' : placeholder} rows={1}
           style={{ flex: 1, border: 'none', outline: 'none', resize: 'none', fontSize: 14, fontFamily: 'inherit', color: 'var(--t-text)', background: 'transparent', lineHeight: 1.5, maxHeight: 120, overflow: 'hidden' }} />
         <button onClick={handleSend} disabled={disabled || (!value.trim() && !pendingFile)}
