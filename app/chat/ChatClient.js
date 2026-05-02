@@ -1228,8 +1228,24 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ conversationId: convId }),
     }).catch(() => null)
-    const data = res?.ok ? await res.json() : []
-    setMessages(Array.isArray(data) ? data : [])
+    const raw = res?.ok ? await res.json() : []
+    const restored = (Array.isArray(raw) ? raw : []).map(m => {
+      if (m.role !== 'assistant') return m
+      if (m.content?.includes('[DOC]')) {
+        const rawDoc = m.content.split('[DOC]')[1] || ''
+        const docContent = rawDoc
+          .replace(/```markdown|```/g, '')
+          .replace(/Criado por[\s\S]*$/i, '')
+          .replace(/Gerado por[\s\S]*$/i, '')
+          .replace(/Espero que[\s\S]*$/i, '')
+          .replace(/---\s*$/m, '')
+          .trim()
+        const docFormat = m.metadata?.format || 'pdf'
+        return { ...m, content: '📄 Documento gerado com sucesso!', docContent, docFormat }
+      }
+      return m
+    })
+    setMessages(restored)
     setActiveConvId(convId)
     setView('conversation')
   }, [])
