@@ -978,7 +978,14 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
   const handleSend = () => {
     const text = value.trim()
     if ((!text && !pendingFile) || disabled) return
-    if (pendingFile) { onFileSelect?.(pendingFile); setPendingFile(null); setPreviewUrl(null) }
+    if (pendingFile) {
+      onFileSelect?.(pendingFile, text)
+      setPendingFile(null)
+      setPreviewUrl(null)
+      setValue('')
+      if (textareaRef.current) textareaRef.current.style.height = 'auto'
+      return
+    }
     if (text) onSend(text)
     setValue('')
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
@@ -1027,7 +1034,7 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
                 <textarea ref={textareaRef} value={value} onChange={handleInput} onKeyDown={handleKeyDown} disabled={disabled} placeholder={disabled ? 'Limite atingido' : placeholder} rows={1}
           style={{ flex: 1, border: 'none', outline: 'none', resize: 'none', fontSize: 14, fontFamily: 'inherit', color: 'var(--t-text)', background: 'transparent', lineHeight: 1.5, maxHeight: 120, overflow: 'hidden' }} />
         <button onClick={handleSend} disabled={disabled || (!value.trim() && !pendingFile)}
-          style={{ padding: '7px 14px', background: disabled || !value.trim() ? 'var(--t-border)' : ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: disabled || !value.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit', flexShrink: 0, transition: 'background 0.2s' }}>
+          style={{ padding: '7px 14px', background: disabled || (!value.trim() && !pendingFile) ? 'var(--t-border)' : ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: disabled || (!value.trim() && !pendingFile) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', flexShrink: 0, transition: 'background 0.2s' }}>
           {placeholder?.includes('Enviar') ? 'Enviar' : 'Enviar'}
         </button>
       </div>
@@ -1240,7 +1247,8 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
           .replace(/Espero que[\s\S]*$/i, '')
           .replace(/---\s*$/m, '')
           .trim()
-        const docFormat = m.metadata?.format || 'pdf'
+        const tl = (m.metadata?.originalText || '').toLowerCase()
+        const docFormat = tl.includes('word') || tl.includes('docx') ? 'docx' : tl.includes('planilha') || tl.includes('excel') || tl.includes('xlsx') ? 'xlsx' : m.metadata?.format || 'pdf'
         return { ...m, content: '📄 Documento gerado com sucesso!', docContent, docFormat }
       }
       return m
@@ -1453,7 +1461,7 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
   }, [isStreaming, user, settings.language])
 
   // ── File upload / document analysis ───────────────────────────
-  const handleFileSelect = useCallback(async (file) => {
+  const handleFileSelect = useCallback(async (file, userMessage = '') => {
     if (isStreaming) return
     setIsStreaming(true)
 
@@ -1474,7 +1482,7 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
       setView('conversation')
     }
 
-    const userMsg = { id: `u-${Date.now()}`, role: 'user', content: `📎 Arquivo enviado: ${file.name}` }
+    const userMsg = { id: `u-${Date.now()}`, role: 'user', content: userMessage ? `📎 ${file.name}: ${userMessage}` : `📎 Arquivo enviado: ${file.name}` }
     const assistantId = `a-${Date.now()}`
     setMessages(prev => [...prev, userMsg, { id: assistantId, role: 'assistant', content: 'Analisando arquivo...', streaming: true }])
 
@@ -1513,7 +1521,7 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
       const res = await fetch('/api/document/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileBase64, fileText, mimeType: file.type, fileName: file.name, userId: user.id, userPlan: user.plan, language: settings.language }),
+        body: JSON.stringify({ fileBase64, fileText, mimeType: file.type, fileName: file.name, userMessage, userId: user.id, userPlan: user.plan, language: settings.language }),
       })
 
       if (res.status === 429) {
