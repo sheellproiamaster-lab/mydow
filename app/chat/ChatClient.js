@@ -768,6 +768,8 @@ function SideMenu({ open, onToggle, user, conversations, msgCount, anyModalOpen,
 function MessageBubble({ msg, onOptionSelect, onRefresh }) {
   const isUser = msg.role === 'user'
   const parts = isUser ? [{ type: 'text', content: msg.content }] : parseResponse(msg.content)
+  const [fullscreenImg, setFullscreenImg] = useState(null)
+  const [fullscreenImg, setFullscreenImg] = useState(null)
 
   const handleDownloadDoc = async (content, format = 'pdf') => {
     if (format === 'docx') {
@@ -842,7 +844,6 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
     doc.text(titleLines, W / 2, 28, { align: 'center' })
     doc.setFontSize(11)
     doc.setFont('helvetica', 'normal')
-    doc.text('Gerado por Mydow · Michel Macedo Holding', W / 2, 44, { align: 'center' })
 
     // Linha laranja lateral
     doc.setFillColor(224, 123, 42)
@@ -900,6 +901,19 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
   }
 
   return (
+    <>
+    {fullscreenImg && (
+      <div onClick={() => setFullscreenImg(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <img src={fullscreenImg} alt="Imagem" style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: 12, boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }} />
+        <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+          <a href={fullscreenImg} download="mydow-imagem.png" onClick={e => e.stopPropagation()}
+            style={{ padding: '10px 24px', background: ORANGE, color: '#fff', borderRadius: 12, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>⬇ Baixar</a>
+          <button onClick={e => { e.stopPropagation(); navigator.share?.({ url: fullscreenImg }).catch(() => navigator.clipboard.writeText(fullscreenImg)) }}
+            style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1.5px solid rgba(255,255,255,0.3)', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>↗ Compartilhar</button>
+          <button onClick={() => setFullscreenImg(null)} style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: 12, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>✕ Fechar</button>
+        </div>
+      </div>
+    )}
     <div style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start', marginBottom: 16, gap: 10, alignItems: 'flex-start' }}>
       {!isUser && <img src="/images/mydow.png" alt="Mydow" style={{ width: 28, height: 28, objectFit: 'contain', flexShrink: 0, marginTop: 4 }} />}
       <div style={{ maxWidth: '75%' }}>
@@ -908,7 +922,14 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
             if (part.type === 'text') return <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{part.content}</span>
             if (part.type === 'image') return (
               <div key={i} style={{ marginTop: 8, marginBottom: 4 }}>
-                <img src={part.url} alt="Imagem gerada" style={{ maxWidth: '100%', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }} />
+                <img src={part.url} alt="Imagem gerada" onClick={() => setFullscreenImg(part.url)}
+                  style={{ maxWidth: '100%', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.15)', cursor: 'pointer' }} />
+                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                  <a href={part.url} download="mydow-imagem.png"
+                    style={{ padding: '6px 14px', background: ORANGE, color: '#fff', borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: 'none', display: 'inline-block' }}>⬇ Baixar</a>
+                  <button onClick={() => navigator.share?.({ url: part.url }).catch(() => navigator.clipboard.writeText(part.url))}
+                    style={{ padding: '6px 14px', background: 'var(--t-card)', border: '1.5px solid var(--t-border)', color: 'var(--t-text)', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>↗ Compartilhar</button>
+                </div>
               </div>
             )
             if (part.type === 'question') return (
@@ -943,6 +964,7 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
         )}
       </div>
     </div>
+    </>
   )
 }
 
@@ -950,13 +972,14 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
 function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
   const [value, setValue] = useState('')
   const [pendingFile, setPendingFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
   const textareaRef = useRef(null)
   const fileRef = useRef(null)
 
   const handleSend = () => {
     const text = value.trim()
     if ((!text && !pendingFile) || disabled) return
-    if (pendingFile) { onFileSelect?.(pendingFile); setPendingFile(null) }
+    if (pendingFile) { onFileSelect?.(pendingFile); setPendingFile(null); setPreviewUrl(null) }
     if (text) onSend(text)
     setValue('')
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
@@ -975,20 +998,34 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
     if (!file) return
     e.target.value = ''
     setPendingFile(file)
+    if (file.type?.startsWith('image/')) {
+      const url = URL.createObjectURL(file)
+      setPreviewUrl(url)
+    } else {
+      setPreviewUrl(null)
+    }
   }
 
   return (
     <div style={{ padding: '10px 14px 18px', background: 'var(--t-bg)', borderTop: '1px solid var(--t-border)', flexShrink: 0 }}>
+      {pendingFile && (
+        <div style={{ marginBottom: 8, padding: '8px 12px', background: 'var(--t-card)', border: '1.5px solid var(--t-border)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+          {pendingFile.type?.startsWith('image/') && previewUrl ? (
+            <img src={previewUrl} alt="preview" style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: 48, height: 48, background: 'var(--t-border)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>📎</div>
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--t-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{pendingFile.name}</div>
+            <div style={{ fontSize: 11, color: 'var(--t-muted)' }}>{(pendingFile.size / 1024).toFixed(0)} KB</div>
+          </div>
+          <button onClick={() => { setPendingFile(null); setPreviewUrl(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t-muted)', fontSize: 18, flexShrink: 0 }}>✕</button>
+        </div>
+      )}
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', background: 'var(--t-input)', border: `1.5px solid var(--t-border)`, borderRadius: 18, padding: '8px 12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
         <button onClick={() => fileRef.current?.click()} title="Enviar arquivo" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '4px 2px', color: 'var(--t-muted)', flexShrink: 0, lineHeight: 1 }}>📎</button>
         <input ref={fileRef} type="file" accept="image/*,.pdf,.doc,.docx,.txt,.md" onChange={handleFile} style={{ display: 'none' }} />
-        {pendingFile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', background: 'var(--t-card)', borderRadius: 8, fontSize: 12, color: 'var(--t-text)', flexShrink: 0 }}>
-            <span>📎 {pendingFile.name}</span>
-            <button onClick={() => setPendingFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--t-muted)', fontSize: 14, lineHeight: 1 }}>✕</button>
-          </div>
-        )}
-        <textarea ref={textareaRef} value={value} onChange={handleInput} onKeyDown={handleKeyDown} disabled={disabled} placeholder={disabled ? 'Limite atingido' : placeholder} rows={1}
+                <textarea ref={textareaRef} value={value} onChange={handleInput} onKeyDown={handleKeyDown} disabled={disabled} placeholder={disabled ? 'Limite atingido' : placeholder} rows={1}
           style={{ flex: 1, border: 'none', outline: 'none', resize: 'none', fontSize: 14, fontFamily: 'inherit', color: 'var(--t-text)', background: 'transparent', lineHeight: 1.5, maxHeight: 120, overflow: 'hidden' }} />
         <button onClick={handleSend} disabled={disabled || (!value.trim() && !pendingFile)}
           style={{ padding: '7px 14px', background: disabled || !value.trim() ? 'var(--t-border)' : ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: disabled || !value.trim() ? 'not-allowed' : 'pointer', fontFamily: 'inherit', flexShrink: 0, transition: 'background 0.2s' }}>
