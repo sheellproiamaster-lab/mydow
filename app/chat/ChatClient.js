@@ -961,7 +961,9 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
     setValue('')
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
   }
-  const handleKeyDown = (e) => { if (e.key === 'Enter' && e.shiftKey) { e.preventDefault(); handleSend() } }
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
+  }
   const handleInput = (e) => {
     setValue(e.target.value)
     const ta = textareaRef.current
