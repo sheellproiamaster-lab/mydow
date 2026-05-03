@@ -74,6 +74,10 @@ export async function POST(request) {
       controller.close()
 
       if (conversationId && fullResponse) {
+        const lastUserMsg = messages[messages.length - 1]
+        if (lastUserMsg?.role === 'user') {
+          await supabase.from('messages').insert({ conversation_id: conversationId, role: 'user', content: lastUserMsg.content }).catch(() => {})
+        }
         await supabase.from('messages').insert({ conversation_id: conversationId, role: 'assistant', content: fullResponse }).catch(() => {})
         await supabase.from('conversations').update({ updated_at: new Date().toISOString() }).eq('id', conversationId).catch(() => {})
       }
