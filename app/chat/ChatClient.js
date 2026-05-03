@@ -905,10 +905,8 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
       <div onClick={() => setFullscreenImg(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
         <img src={fullscreenImg} alt="Imagem" style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: 12, boxShadow: '0 8px 40px rgba(0,0,0,0.5)' }} />
         <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-          <a href={fullscreenImg} download="mydow-imagem.png" onClick={e => e.stopPropagation()}
-            style={{ padding: '10px 24px', background: ORANGE, color: '#fff', borderRadius: 12, fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>⬇ Baixar</a>
-          <button onClick={e => { e.stopPropagation(); navigator.share?.({ url: fullscreenImg }).catch(() => navigator.clipboard.writeText(fullscreenImg)) }}
-            style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.15)', color: '#fff', border: '1.5px solid rgba(255,255,255,0.3)', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>↗ Compartilhar</button>
+          <button onClick={async e => { e.stopPropagation(); try { const r = await fetch(fullscreenImg); const b = await r.blob(); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'mydow-imagem.png'; a.click(); URL.revokeObjectURL(u) } catch { window.open(fullscreenImg, '_blank') } }}
+            style={{ padding: '10px 24px', background: ORANGE, color: '#fff', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer', border: 'none', fontFamily: 'inherit' }}>⬇ Baixar</button>
           <button onClick={() => setFullscreenImg(null)} style={{ padding: '10px 24px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: 12, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>✕ Fechar</button>
         </div>
       </div>
@@ -924,10 +922,8 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
                 <img src={part.url} alt="Imagem gerada" onClick={() => setFullscreenImg(part.url)}
                   style={{ maxWidth: '100%', borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.15)', cursor: 'pointer' }} />
                 <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                  <a href={part.url} download="mydow-imagem.png"
-                    style={{ padding: '6px 14px', background: ORANGE, color: '#fff', borderRadius: 10, fontSize: 12, fontWeight: 600, textDecoration: 'none', display: 'inline-block' }}>⬇ Baixar</a>
-                  <button onClick={() => navigator.share?.({ url: part.url }).catch(() => navigator.clipboard.writeText(part.url))}
-                    style={{ padding: '6px 14px', background: 'var(--t-card)', border: '1.5px solid var(--t-border)', color: 'var(--t-text)', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>↗ Compartilhar</button>
+                  <button onClick={async () => { try { const r = await fetch(part.url); const b = await r.blob(); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = 'mydow-imagem.png'; a.click(); URL.revokeObjectURL(u) } catch { window.open(part.url, '_blank') } }}
+                    style={{ padding: '6px 14px', background: ORANGE, color: '#fff', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: 'none', fontFamily: 'inherit' }}>⬇ Baixar</button>
                 </div>
               </div>
             )
@@ -1089,10 +1085,11 @@ function ChatHome({ user, msgCount, onSend, onOpenSideMenu, onOpenUpgrade, onOpe
         </div>
 
         {isLimited && (
-          <div style={{ padding: '14px 20px', background: 'var(--t-card)', border: '1.5px solid #e74c3c', borderRadius: 14, textAlign: 'center', maxWidth: 380 }}>
-            <p style={{ fontSize: 14, color: '#e74c3c', fontWeight: 600, margin: '0 0 8px' }}>{t.limitReached}</p>
-            <button onClick={onOpenUpgrade} style={{ padding: '8px 20px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Fazer Upgrade</button>
-          </div>
+          <button onClick={() => window.location.href = 'https://checkout.stripe.com/g/pay/cs_live_a1n1YyKkCtQQZgdZNEZJkEDbo7aYrN2czjPYek0fWpOyvwZf8nicRIBl6o#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8ncXdgZHFoYGtxWjQnKSdkdWxOYHwnPyd1blppbHNgWjA0UVR1aWJEYm9wRmNKf3w9dFA2MXwzZ04xUD1SfTc2VH9Kbk1cUUFqamR%2Fb0dXSXQzPGR9QEY8SjJFS3xHRGpga2JybEx8fTVBdEhjZEZqcmJWMFJzQmNnNTVPM2NicnJnYCcpJ2N3amhWYHdzYHcnP3F3cGApJ2dkZm5id2pwa2FGamlqdyc%2FJyZjY2NjY2MnKSdpZHxqcHFRfHVgJz8ndmxrYmlgWmxxYGgnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl'}
+            style={{ display: 'block', width: '100%', maxWidth: 380, padding: '16px 20px', background: 'var(--t-card)', border: `2px solid ${ORANGE}`, borderRadius: 14, textAlign: 'center', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <p style={{ fontSize: 14, color: 'var(--t-text)', fontWeight: 600, margin: '0 0 6px' }}>Suas mensagens serão renovadas às 00:00 — não espere por isso.</p>
+            <span style={{ display: 'inline-block', padding: '8px 20px', background: ORANGE, color: '#fff', borderRadius: 10, fontSize: 13, fontWeight: 700 }}>Assine o Plano Pro e use o Mydow ilimitado ⚡</span>
+          </button>
         )}
       </div>
       <ChatInput onSend={onSend} disabled={isLimited} placeholder={t.typeMsg} />
@@ -1127,10 +1124,11 @@ function ConversationView({ messages, isStreaming, onSend, onFileSelect, onOpenS
           </div>
         )}
         {isLimited && !isStreaming && (
-          <div style={{ padding: '14px 20px', background: 'var(--t-card)', border: '1.5px solid #e74c3c', borderRadius: 14, textAlign: 'center', margin: '10px 0' }}>
-            <p style={{ fontSize: 14, color: '#e74c3c', fontWeight: 600, margin: '0 0 8px' }}>{t.limitReached}</p>
-            <button onClick={onOpenUpgrade} style={{ padding: '8px 20px', background: ORANGE, color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>Fazer Upgrade</button>
-          </div>
+          <button onClick={() => window.location.href = 'https://checkout.stripe.com/g/pay/cs_live_a1n1YyKkCtQQZgdZNEZJkEDbo7aYrN2czjPYek0fWpOyvwZf8nicRIBl6o#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSdicGRmZGhqaWBTZHdsZGtxJz8ncXdgZHFoYGtxWjQnKSdkdWxOYHwnPyd1blppbHNgWjA0UVR1aWJEYm9wRmNKf3w9dFA2MXwzZ04xUD1SfTc2VH9Kbk1cUUFqamR%2Fb0dXSXQzPGR9QEY8SjJFS3xHRGpga2JybEx8fTVBdEhjZEZqcmJWMFJzQmNnNTVPM2NicnJnYCcpJ2N3amhWYHdzYHcnP3F3cGApJ2dkZm5id2pwa2FGamlqdyc%2FJyZjY2NjY2MnKSdpZHxqcHFRfHVgJz8ndmxrYmlgWmxxYGgnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl'}
+            style={{ display: 'block', width: '100%', padding: '16px 20px', background: 'var(--t-card)', border: `2px solid ${ORANGE}`, borderRadius: 14, textAlign: 'center', margin: '10px 0', cursor: 'pointer', fontFamily: 'inherit' }}>
+            <p style={{ fontSize: 14, color: 'var(--t-text)', fontWeight: 600, margin: '0 0 6px' }}>Suas mensagens serão renovadas às 00:00 — não espere por isso.</p>
+            <span style={{ display: 'inline-block', padding: '8px 20px', background: ORANGE, color: '#fff', borderRadius: 10, fontSize: 13, fontWeight: 700 }}>Assine o Plano Pro e use o Mydow ilimitado ⚡</span>
+          </button>
         )}
         <div ref={bottomRef} />
       </div>
