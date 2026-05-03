@@ -1,4 +1,4 @@
-import { OpenAI } from 'openai'
+import Anthropic from '@anthropic-ai/sdk'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 
 const WEEKLY_LIMITS = { free: 3, plus: 7, pro: Infinity }
@@ -24,46 +24,57 @@ export async function POST(request) {
     }
   }
 
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   const langNames = { pt: 'português', en: 'inglês', es: 'espanhol' }
   const langStr = langNames[language] || 'português'
 
   const isImage = mimeType && mimeType.startsWith('image/')
-  let messages
+  const isPdf = mimeType === 'application/pdf'
+  let content
 
   if (isImage && fileBase64) {
-    messages = [
+    // Análise de imagem via Claude
+    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    const mediaType = validImageTypes.includes(mimeType) ? mimeType : 'image/jpeg'
+    content = [
       {
-        role: 'user',
-        content: [
-          { type: 'image_url', image_url: { url: `data:${mimeType};base64,${fileBase64}` } },
-          { type: 'text', text: userMessage || `Analise esta imagem (${fileName}) e descreva o conteúdo em detalhes. Responda em ${langStr}.` },
-        ],
+        type: 'image',
+        source: { type: 'base64', media_type: mediaType, data: fileBase64 },
+      },
+      {
+        type: 'text',
+        text: userMessage || `Analise esta imagem (${fileName}) em detalhes. Descreva tudo que vê: elementos visuais, textos, cores, contexto, possíveis usos. Responda em ${langStr}.`,
+      },
+    ]
+  } else if (isPdf && fileBase64) {
+    // Análise de PDF via Claude
+    content = [
+      {
+        type: 'document',
+        source: { type: 'base64', media_type: 'application/pdf', data: fileBase64 },
+      },
+      {
+        type: 'text',
+        text: userMessage || `Analise este documento PDF (${fileName}) em detalhes. Faça um resumo completo, identifique os pontos principais e forneça insights relevantes. Responda em ${langStr}.`,
       },
     ]
   } else if (fileText) {
-    messages = [
-      {
-        role: 'user',
-        content: `Analise o seguinte conteúdo do arquivo "${fileName}" e ${userMessage || 'forneça um resumo detalhado'}. Responda em ${langStr}.\n\n---\n${fileText.slice(0, 12000)}`,
-      },
-    ]
+    // Análise de texto (DOCX, TXT, etc)
+    content = userMessage
+      ? `${userMessage}\n\nConteúdo do arquivo "${fileName}":\n\n${fileText.slice(0, 12000)}\n\nResponda em ${langStr}.`
+      : `Analise o conteúdo do arquivo "${fileName}" em detalhes. Faça um resumo completo, identifique os pontos principais e forneça insights relevantes. Responda em ${langStr}.\n\nConteúdo:\n\n${fileText.slice(0, 12000)}`
   } else {
-    messages = [
-      {
-        role: 'user',
-        content: `O arquivo "${fileName}" foi enviado mas não pôde ser lido diretamente. Por favor informe ao usuário que arquivos PDF e DOCX precisam ter seu conteúdo copiado e colado no chat. Responda em ${langStr}.`,
-      },
-    ]
+    content = `O arquivo "${fileName}" foi enviado mas não pôde ser lido. Informe ao usuário de forma amigável que este formato pode não ser suportado e sugira converter para PDF, imagem ou texto. Responda em ${langStr}.`
   }
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages,
-    max_tokens: 800,
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 2000,
+    messages: [{ role: 'user', content }],
+    system: `Você é o Mydow, um assistente especialista em análise de documentos e imagens criado pela Michel Macedo Holding. Faça análises detalhadas, precisas e úteis. Nunca mencione outras IAs ou tecnologias. Responda sempre em ${langStr}.`,
   })
 
-  const result = completion.choices[0]?.message?.content || 'Não foi possível analisar o arquivo.'
+  const result = response.content[0]?.text || 'Não foi possível analisar o arquivo.'
 
   if (userPlan !== 'pro') {
     const { data: ul } = await supabase.from('usage_limits').select('docs_analyzed').eq('user_id', userId).single()
