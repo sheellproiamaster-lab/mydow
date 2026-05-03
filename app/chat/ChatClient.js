@@ -49,6 +49,16 @@ function formatCountdown(resetAt) {
   return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
 }
 
+function cleanMarkdown(text) {
+  return text
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/^[-*]\s+/gm, '• ')
+    .replace(/`([^`]+)`/g, '$1')
+    .trim()
+}
+
 function parseResponse(text) {
   const parts = []
   const imageRegex = /\[MYDOW_IMAGE:(https?:\/\/[^\]]+)\]/g
@@ -767,7 +777,7 @@ function SideMenu({ open, onToggle, user, conversations, msgCount, anyModalOpen,
 // ─────────────────────────── MESSAGE BUBBLE ──────────────────────
 function MessageBubble({ msg, onOptionSelect, onRefresh }) {
   const isUser = msg.role === 'user'
-  const parts = isUser ? [{ type: 'text', content: msg.content }] : parseResponse(msg.content)
+  const parts = isUser ? [{ type: 'text', content: msg.content }] : parseResponse(cleanMarkdown(msg.content))
   const [fullscreenImg, setFullscreenImg] = useState(null)
 
   const handleDownloadDoc = async (content, format = 'pdf') => {
@@ -916,7 +926,26 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
       <div style={{ maxWidth: '75%' }}>
         <div style={{ background: isUser ? 'var(--t-msg-user-bg)' : 'var(--t-msg-ai-bg)', color: isUser ? '#fff' : 'var(--t-msg-ai-text)', borderRadius: isUser ? '18px 18px 4px 18px' : '4px 18px 18px 18px', padding: '12px 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', fontSize: 14, lineHeight: 1.6 }}>
           {parts.map((part, i) => {
-            if (part.type === 'text') return <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{part.content}</span>
+            if (part.type === 'text') {
+              const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g
+              const urlRegex = /(https?:\/\/[^\s\)\]]+)/g
+              const content = part.content
+              const elements = []
+              let lastIndex = 0
+              let match
+              const combined = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)|(https?:\/\/[^\s\)\]]+)/g
+              while ((match = combined.exec(content)) !== null) {
+                if (match.index > lastIndex) elements.push(<span key={lastIndex}>{content.slice(lastIndex, match.index)}</span>)
+                if (match[1] && match[2]) {
+                  elements.push(<a key={match.index} href={match[2]} target="_blank" rel="noopener noreferrer" style={{ color: ORANGE, textDecoration: 'underline', fontWeight: 600 }}>{match[1]}</a>)
+                } else {
+                  elements.push(<a key={match.index} href={match[3]} target="_blank" rel="noopener noreferrer" style={{ color: ORANGE, textDecoration: 'underline', fontWeight: 600 }}>{match[3]}</a>)
+                }
+                lastIndex = match.index + match[0].length
+              }
+              if (lastIndex < content.length) elements.push(<span key={lastIndex}>{content.slice(lastIndex)}</span>)
+              return <span key={i} style={{ whiteSpace: 'pre-wrap' }}>{elements.length ? elements : content}</span>
+            }
             if (part.type === 'image') return (
               <div key={i} style={{ marginTop: 8, marginBottom: 4 }}>
                 <img src={part.url} alt="Imagem gerada" onClick={() => setFullscreenImg(part.url)}
@@ -987,7 +1016,7 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
   }
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && e.shiftKey) { e.preventDefault() }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
   const handleInput = (e) => {
     setValue(e.target.value)
@@ -1029,7 +1058,7 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
         <input ref={fileRef} type="file" accept="image/*,.pdf,.doc,.docx,.txt,.md,.csv,.xlsx,.xls,.pptx" onChange={handleFile} style={{ display: 'none' }} />
                 <textarea ref={textareaRef} value={value} onChange={handleInput} onKeyDown={handleKeyDown} disabled={disabled} placeholder={disabled ? 'Limite atingido' : placeholder} rows={1}
           style={{ flex: 1, border: 'none', outline: 'none', resize: 'none', fontSize: 14, fontFamily: 'inherit', color: 'var(--t-text)', background: 'transparent', lineHeight: 1.5, maxHeight: 120, overflow: 'hidden' }} />
-        <button onClick={handleSend} disabled={disabled || (!value.trim() && !pendingFile)}
+        <button onClick={e => { e.preventDefault(); handleSend() }} disabled={disabled || (!value.trim() && !pendingFile)}
           style={{ padding: '7px 14px', background: disabled || (!value.trim() && !pendingFile) ? 'var(--t-border)' : ORANGE, color: '#fff', border: 'none', borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: disabled || (!value.trim() && !pendingFile) ? 'not-allowed' : 'pointer', fontFamily: 'inherit', flexShrink: 0, transition: 'background 0.2s' }}>
           {placeholder?.includes('Enviar') ? 'Enviar' : 'Enviar'}
         </button>
