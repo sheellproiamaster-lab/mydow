@@ -782,29 +782,36 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
 
   const handleDownloadDoc = async (content, format = 'pdf') => {
     if (format === 'docx') {
-      const { Document, Packer, Paragraph, TextRun, HeadingLevel } = await import('docx')
+      const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, BorderStyle } = await import('docx')
       const children = []
-      content.split('\n').forEach(line => {
+      const lines = content.split('\n')
+      lines.forEach(line => {
         const clean = line.replace(/[`]/g, '').trim()
-        if (!clean) { children.push(new Paragraph('')); return }
+        if (!clean) { children.push(new Paragraph({ spacing: { after: 80 } })); return }
         if (line.startsWith('# ')) {
-          children.push(new Paragraph({ text: clean.replace(/^#+ /, ''), heading: HeadingLevel.HEADING_1 }))
+          children.push(new Paragraph({ text: clean.replace(/^#+\s*/, ''), heading: HeadingLevel.HEADING_1, spacing: { before: 400, after: 200 } }))
         } else if (line.startsWith('## ')) {
-          children.push(new Paragraph({ text: clean.replace(/^#+ /, ''), heading: HeadingLevel.HEADING_2 }))
+          children.push(new Paragraph({ text: clean.replace(/^#+\s*/, ''), heading: HeadingLevel.HEADING_2, spacing: { before: 320, after: 160 } }))
         } else if (line.startsWith('### ')) {
-          children.push(new Paragraph({ text: clean.replace(/^#+ /, ''), heading: HeadingLevel.HEADING_3 }))
+          children.push(new Paragraph({ text: clean.replace(/^#+\s*/, ''), heading: HeadingLevel.HEADING_3, spacing: { before: 240, after: 120 } }))
         } else if (line.trim().startsWith('- ') || line.trim().match(/^\d+\./)) {
           const txt = clean.replace(/^[-•]\s*/, '').replace(/^\d+\.\s*/, '').replace(/\*\*/g, '')
-          children.push(new Paragraph({ text: txt, bullet: { level: 0 } }))
+          children.push(new Paragraph({ text: txt, bullet: { level: 0 }, spacing: { after: 80 } }))
         } else {
           const boldParts = clean.split(/\*\*(.*?)\*\*/g)
-          const runs = boldParts.map((p, i) => new TextRun({ text: p, bold: i % 2 === 1 }))
-          children.push(new Paragraph({ children: runs }))
+          const runs = boldParts.map((p, i) => new TextRun({ text: p, bold: i % 2 === 1, size: 24 }))
+          children.push(new Paragraph({ children: runs, spacing: { after: 120 } }))
         }
       })
-      children.push(new Paragraph(''))
-      // sem rodapé
-      const doc = new Document({ sections: [{ children }] })
+      const doc = new Document({
+        sections: [{ children }],
+        styles: {
+          paragraphStyles: [{
+            id: 'Normal', name: 'Normal',
+            run: { font: 'Calibri', size: 24, color: '333333' },
+          }]
+        }
+      })
       const blob = await Packer.toBlob(doc)
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a'); a.href = url; a.download = 'mydow-documento.docx'; a.click()
@@ -823,6 +830,13 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
       if (parsed?.sheets) {
         parsed.sheets.forEach(sheet => {
           const ws = XLSX.utils.aoa_to_sheet([sheet.headers, ...sheet.rows])
+          // Estilo de cabeçalho
+          const range = XLSX.utils.decode_range(ws['!ref'])
+          for (let C = range.s.c; C <= range.e.c; C++) {
+            const cell = ws[XLSX.utils.encode_cell({ r: 0, c: C })]
+            if (cell) cell.s = { font: { bold: true }, fill: { fgColor: { rgb: 'E07B2A' } } }
+          }
+          ws['!cols'] = sheet.headers.map(() => ({ wch: 20 }))
           XLSX.utils.book_append_sheet(wb, ws, sheet.name || 'Planilha')
         })
       } else {
@@ -834,78 +848,220 @@ function MessageBubble({ msg, onOptionSelect, onRefresh }) {
       XLSX.writeFile(wb, 'mydow-planilha.xlsx')
       return
     }
+
+    // PDF PREMIUM
     const { jsPDF } = await import('jspdf')
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
     const W = doc.internal.pageSize.getWidth()
     const H = doc.internal.pageSize.getHeight()
+    const ML = 18, MR = 18, MT = 0, textW = W - ML - MR
 
-    // Capa
-    doc.setFillColor(224, 123, 42)
-    doc.rect(0, 0, W, 55, 'F')
-    doc.setFillColor(180, 90, 20)
-    doc.rect(0, 48, W, 7, 'F')
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(22)
-    doc.setFont('helvetica', 'bold')
     const lines0 = content.split('\n')
-    const title = lines0[0]?.replace(/[#*`]/g, '').trim() || 'Documento Mydow'
-    const titleLines = doc.splitTextToSize(title, W - 30)
-    doc.text(titleLines, W / 2, 28, { align: 'center' })
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'normal')
-
-    // Linha laranja lateral
-    doc.setFillColor(224, 123, 42)
-    doc.rect(0, 55, 4, H - 55, 'F')
-
-    // Conteúdo
-    doc.setTextColor(30, 30, 30)
-    let y = 68
+    const rawTitle = lines0[0]?.replace(/[#*`]/g, '').trim() || 'Documento Mydow'
     const bodyLines = lines0.slice(1)
+
+    // ── CAPA ──────────────────────────────────────────────────────
+    // Fundo gradiente simulado (retângulos sobrepostos)
+    for (let i = 0; i < 60; i++) {
+      const ratio = i / 60
+      const r = Math.round(224 - ratio * 40)
+      const g = Math.round(123 - ratio * 30)
+      const b = Math.round(42 - ratio * 10)
+      doc.setFillColor(r, g, b)
+      doc.rect(0, i, W, 1.1, 'F')
+    }
+    doc.setFillColor(180, 80, 15)
+    doc.rect(0, 56, W, 3, 'F')
+
+    // Logo placeholder (círculo M)
+    doc.setFillColor(255, 255, 255)
+    doc.circle(W / 2, 22, 10, 'F')
+    doc.setTextColor(224, 123, 42)
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.text('M', W / 2, 26, { align: 'center' })
+
+    // Título na capa
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(rawTitle.length > 40 ? 16 : 20)
+    doc.setFont('helvetica', 'bold')
+    const titleWrapped = doc.splitTextToSize(rawTitle, W - 30)
+    const titleY = titleWrapped.length > 1 ? 40 : 44
+    doc.text(titleWrapped, W / 2, titleY, { align: 'center' })
+
+    // Subtítulo / data
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(255, 230, 200)
+    doc.text('Gerado pelo Mydow · Michel Macedo Holding', W / 2, 52, { align: 'center' })
+
+    // Linha decorativa lateral esquerda
+    doc.setFillColor(255, 255, 255)
+    doc.rect(0, 0, 3, 60, 'F')
+
+    // ── CONTEÚDO ──────────────────────────────────────────────────
+    let y = 75
+    let pageNum = 1
+
+    const checkPage = (needed = 10) => {
+      if (y + needed > H - 18) {
+        // Rodapé da página atual
+        doc.setFillColor(245, 245, 245)
+        doc.rect(0, H - 12, W, 12, 'F')
+        doc.setFillColor(224, 123, 42)
+        doc.rect(0, H - 12, W, 1.5, 'F')
+        doc.setFontSize(8)
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(150, 150, 150)
+        doc.text('Mydow · Michel Macedo Holding', ML, H - 5)
+        doc.text(`${pageNum}`, W - MR, H - 5, { align: 'right' })
+
+        doc.addPage()
+        pageNum++
+        y = 20
+
+        // Cabeçalho nas páginas internas
+        doc.setFillColor(224, 123, 42)
+        doc.rect(0, 0, 3, H, 'F')
+        doc.setFillColor(250, 248, 245)
+        doc.rect(3, 0, W - 3, 14, 'F')
+        doc.setFontSize(8)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(224, 123, 42)
+        doc.text('MYDOW', ML + 2, 9)
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(150, 150, 150)
+        const shortTitle = rawTitle.length > 60 ? rawTitle.slice(0, 57) + '...' : rawTitle
+        doc.text(shortTitle, ML + 20, 9)
+        doc.setFillColor(224, 123, 42)
+        doc.rect(3, 13, W - 3, 0.5, 'F')
+        y = 22
+      }
+    }
+
+    // Cabeçalho primeira página de conteúdo
+    doc.setFillColor(224, 123, 42)
+    doc.rect(0, 0, 3, H, 'F')
+
     bodyLines.forEach(line => {
       const clean = line.replace(/[`]/g, '').trim()
-      if (!clean) { y += 4; return }
-      const isH2 = line.startsWith('## ') || line.startsWith('**') && line.endsWith('**')
+      if (!clean) { y += 3; return }
+
       const isH1 = line.startsWith('# ')
-      const isBullet = line.trim().startsWith('- ') || line.trim().match(/^\d+\./)
+      const isH2 = line.startsWith('## ') || (line.startsWith('**') && line.endsWith('**') && !line.includes(' **'))
+      const isH3 = line.startsWith('### ')
+      const isBullet = line.trim().startsWith('- ') || line.trim().startsWith('• ') || line.trim().match(/^\d+\./)
+      const isSeparator = line.trim() === '---' || line.trim() === '***'
+
+      if (isSeparator) {
+        checkPage(8)
+        doc.setDrawColor(224, 123, 42)
+        doc.setLineWidth(0.3)
+        doc.line(ML, y, W - MR, y)
+        y += 6
+        return
+      }
+
       if (isH1) {
-        if (y > H - 30) { doc.addPage(); y = 20; doc.setFillColor(224,123,42); doc.rect(0,0,4,H,'F') }
-        doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(224, 123, 42)
-        const t = doc.splitTextToSize(clean.replace(/^#+\s*/, ''), W - 30)
-        doc.text(t, 12, y); y += t.length * 8 + 3
-        doc.setDrawColor(224,123,42); doc.setLineWidth(0.4); doc.line(12, y - 1, W - 12, y - 1); y += 2
-      } else if (isH2) {
-        if (y > H - 30) { doc.addPage(); y = 20; doc.setFillColor(224,123,42); doc.rect(0,0,4,H,'F') }
-        doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(60, 60, 60)
-        const t = doc.splitTextToSize(clean.replace(/^\*\*|\*\*$/g, '').replace(/^#+\s*/, ''), W - 30)
-        doc.text(t, 12, y); y += t.length * 7 + 2
-      } else if (isBullet) {
-        if (y > H - 30) { doc.addPage(); y = 20; doc.setFillColor(224,123,42); doc.rect(0,0,4,H,'F') }
-        doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50)
+        checkPage(20)
+        y += 4
+        // Fundo laranja suave para H1
+        doc.setFillColor(255, 245, 235)
+        doc.rect(ML - 2, y - 6, textW + 4, 12, 'F')
+        doc.setFillColor(224, 123, 42)
+        doc.rect(ML - 2, y - 6, 3, 12, 'F')
+        doc.setFontSize(14)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(180, 80, 15)
+        const h1Lines = doc.splitTextToSize(clean.replace(/^#+\s*/, '').replace(/\*\*/g, ''), textW - 6)
+        doc.text(h1Lines, ML + 4, y)
+        y += h1Lines.length * 7 + 6
+        return
+      }
+
+      if (isH2) {
+        checkPage(16)
+        y += 3
+        doc.setFontSize(12)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(60, 60, 60)
+        const h2text = clean.replace(/^\*\*|\*\*$/g, '').replace(/^#+\s*/, '')
+        const h2Lines = doc.splitTextToSize(h2text, textW)
+        doc.text(h2Lines, ML, y)
+        y += h2Lines.length * 6.5
+        // Linha underline
+        doc.setDrawColor(224, 123, 42)
+        doc.setLineWidth(0.4)
+        doc.line(ML, y, ML + 40, y)
+        y += 4
+        return
+      }
+
+      if (isH3) {
+        checkPage(12)
+        y += 2
+        doc.setFontSize(11)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(100, 60, 20)
+        const h3Lines = doc.splitTextToSize(clean.replace(/^#+\s*/, ''), textW)
+        doc.text(h3Lines, ML, y)
+        y += h3Lines.length * 6 + 3
+        return
+      }
+
+      if (isBullet) {
         const bulletText = clean.replace(/^[-•]\s*/, '').replace(/^\d+\.\s*/, '')
         const boldMatch = bulletText.match(/^\*\*(.*?)\*\*(.*)/)
+        const plainText = boldMatch ? boldMatch[1] + boldMatch[2] : bulletText.replace(/\*\*/g, '')
+        const bLines = doc.splitTextToSize(plainText, textW - 8)
+        checkPage(bLines.length * 5.5 + 3)
+
+        // Bullet laranja
+        doc.setFillColor(224, 123, 42)
+        doc.circle(ML + 2, y - 1.5, 1.2, 'F')
+
         if (boldMatch) {
-          doc.setFillColor(224,123,42); doc.circle(17, y - 2, 1.2, 'F')
-          doc.setFont('helvetica', 'bold'); doc.text(boldMatch[1], 21, y)
-          const bw = doc.getTextWidth(boldMatch[1])
-          doc.setFont('helvetica', 'normal'); doc.text(boldMatch[2], 21 + bw, y)
+          doc.setFontSize(10)
+          doc.setFont('helvetica', 'bold')
+          doc.setTextColor(50, 50, 50)
+          const bw = doc.getTextWidth(boldMatch[1].replace(/\*\*/g, ''))
+          doc.text(boldMatch[1].replace(/\*\*/g, ''), ML + 6, y)
+          doc.setFont('helvetica', 'normal')
+          doc.setTextColor(80, 80, 80)
+          const rest = doc.splitTextToSize(boldMatch[2], textW - 8 - bw)
+          doc.text(boldMatch[2].trim() ? rest : '', ML + 6 + bw, y)
         } else {
-          doc.setFillColor(224,123,42); doc.circle(17, y - 2, 1.2, 'F')
-          const t = doc.splitTextToSize(bulletText.replace(/\*\*/g,''), W - 35)
-          doc.text(t, 21, y); y += (t.length - 1) * 6
+          doc.setFontSize(10)
+          doc.setFont('helvetica', 'normal')
+          doc.setTextColor(70, 70, 70)
+          doc.text(bLines, ML + 6, y)
         }
-        y += 7
-      } else {
-        if (y > H - 30) { doc.addPage(); y = 20; doc.setFillColor(224,123,42); doc.rect(0,0,4,H,'F') }
-        doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.setTextColor(50, 50, 50)
-        const t = doc.splitTextToSize(clean.replace(/\*\*/g,''), W - 25)
-        doc.text(t, 12, y); y += t.length * 6 + 2
+        y += bLines.length * 5.5 + 2
+        return
       }
+
+      // Parágrafo normal — detecta bold inline
+      const paraLines = doc.splitTextToSize(clean.replace(/\*\*/g, ''), textW)
+      checkPage(paraLines.length * 5.5 + 2)
+      doc.setFontSize(10.5)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(55, 55, 55)
+      doc.text(paraLines, ML, y)
+      y += paraLines.length * 5.8 + 2
     })
 
-    // sem rodapé
+    // Rodapé última página
+    doc.setFillColor(245, 245, 245)
+    doc.rect(0, H - 12, W, 12, 'F')
+    doc.setFillColor(224, 123, 42)
+    doc.rect(0, H - 12, W, 1.5, 'F')
+    doc.setFontSize(8)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(150, 150, 150)
+    doc.text('Mydow · Michel Macedo Holding', ML, H - 5)
+    doc.text(`${pageNum}`, W - MR, H - 5, { align: 'right' })
 
-    const safeName = title.replace(/[^a-zA-Z0-9\s]/g, '').trim().slice(0, 40) || 'mydow-documento'
+    const safeName = rawTitle.replace(/[^a-zA-Z0-9\s]/g, '').trim().slice(0, 40) || 'mydow-documento'
     doc.save(`${safeName}.pdf`)
   }
 
@@ -1016,7 +1172,7 @@ function ChatInput({ onSend, onFileSelect, disabled, placeholder }) {
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
   }
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
+    if (e.key === 'Enter' && !e.shiftKey && !('ontouchstart' in window)) { e.preventDefault(); handleSend() }
   }
   const handleInput = (e) => {
     setValue(e.target.value)
@@ -1438,6 +1594,15 @@ export default function ChatClient({ user, messageCount, memory: initialMemory, 
       })
 
       setConversations(prev => prev.map(c => c.id === convId ? { ...c, updated_at: new Date().toISOString() } : c))
+
+      fetch('/api/user/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      }).then(r => r.ok ? r.json() : null).then(data => {
+        if (data?.msgCount) setMsgCount(data.msgCount)
+      }).catch(() => {})
+
     } catch (err) {
       console.error('Send error:', err)
     }

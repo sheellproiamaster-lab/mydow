@@ -39,14 +39,18 @@ export async function POST(request) {
     messages: [
       {
         role: 'user',
-        content: `Crie um documento completo e extremamente detalhado sobre: ${prompt}.
+        content: `Crie um documento profissional de altíssimo nível sobre: ${prompt}.
 ${formatInstructions[format] || formatInstructions.pdf}
 Regras obrigatórias:
-- Seja muito detalhado, com no mínimo 6 seções completas
-- Cada seção deve ter pelo menos 3 parágrafos ou 5 itens
-- Use linguagem profissional e precisa
-- NUNCA inclua rodapé, assinatura, "criado por", data ou qualquer texto que não seja conteúdo do documento
-- Comece direto com o título e conteúdo`,
+- Use # para título principal, ## para seções, ### para subseções
+- Estrutura completa e bem organizada com quantas seções o tema exigir
+- Conteúdo denso e aprofundado em cada seção — sem superficialidade
+- Use **negrito** para conceitos-chave e termos importantes
+- Use listas com - para pontos e recomendações
+- Linguagem executiva, precisa e sofisticada — nível de consultoria premium
+- Dados concretos, exemplos práticos e insights acionáveis
+- NUNCA inclua rodapé, assinatura, "criado por", data ou qualquer texto que não seja conteúdo
+- Comece direto com o título em # e desenvolva com profundidade máxima`,
       }
     ],
   })
